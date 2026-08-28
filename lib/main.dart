@@ -24,6 +24,7 @@ class FoodPleaseApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
+        '/forgot-password': (context) => const ForgotPasswordPage(),
       },
     );
   }
@@ -40,53 +41,62 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode passwordFocusNode = FocusNode();
+
   bool obscurePassword = true;
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    emailFocusNode.dispose();
+    passwordFocusNode.dispose();
     super.dispose();
   }
+
   void iniciarSesion() {
-  final String email = emailController.text.trim();
-  final String password = passwordController.text.trim();
+    final String email = emailController.text.trim();
+    final String password = passwordController.text.trim();
 
-  if (email.isEmpty || password.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Debes ingresar tu correo electrónico y contraseña.',
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Debes ingresar tu correo electrónico y contraseña.',
+          ),
         ),
-      ),
-    );
-    return;
-  }
+      );
+      return;
+    }
 
-  if (!email.contains('@') || !email.contains('.')) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Ingresa un correo electrónico válido.',
+    if (!email.contains('@') || !email.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Ingresa un correo electrónico válido.',
+          ),
         ),
-      ),
-    );
-    return;
-  }
+      );
+      return;
+    }
 
-  if (password.length < 6) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'La contraseña debe tener al menos 6 caracteres.',
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'La contraseña debe tener al menos 6 caracteres.',
+          ),
         ),
-      ),
-    );
-    return;
-  }
+      );
+      return;
+    }
 
-  Navigator.pushReplacementNamed(context, '/home');
-}
+    Navigator.pushReplacementNamed(
+      context,
+      '/home',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +138,15 @@ class _LoginPageState extends State<LoginPage> {
               // Correo electrónico
               TextField(
                 controller: emailController,
+                focusNode: emailFocusNode,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autocorrect: false,
+                enableSuggestions: false,
+                stylusHandwritingEnabled: false,
+                onSubmitted: (_) {
+                  passwordFocusNode.requestFocus();
+                },
                 decoration: const InputDecoration(
                   labelText: 'Correo electrónico',
                   prefixIcon: Icon(
@@ -150,7 +168,13 @@ class _LoginPageState extends State<LoginPage> {
               // Contraseña
               TextField(
                 controller: passwordController,
+                focusNode: passwordFocusNode,
                 obscureText: obscurePassword,
+                textInputAction: TextInputAction.done,
+                stylusHandwritingEnabled: false,
+                onSubmitted: (_) {
+                  iniciarSesion();
+                },
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
                   prefixIcon: const Icon(
@@ -185,7 +209,12 @@ class _LoginPageState extends State<LoginPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/forgot-password',
+                    );
+                  },
                   child: const Text(
                     '¿Olvidaste tu contraseña?',
                     style: TextStyle(
@@ -224,9 +253,13 @@ class _LoginPageState extends State<LoginPage> {
               // Separador
               const Row(
                 children: [
-                  Expanded(child: Divider()),
+                  Expanded(
+                    child: Divider(),
+                  ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                    ),
                     child: Text(
                       'o',
                       style: TextStyle(
@@ -234,13 +267,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  Expanded(child: Divider()),
+                  Expanded(
+                    child: Divider(),
+                  ),
                 ],
               ),
 
               const SizedBox(height: 24),
 
-              // Google
+              // Google - por ahora simulado
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF168FC2),
@@ -256,7 +291,9 @@ class _LoginPageState extends State<LoginPage> {
                   Icons.account_circle_outlined,
                 ),
                 label: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 14,
+                  ),
                   child: Text(
                     'Continuar con Google',
                   ),
@@ -265,7 +302,7 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 24),
 
-              // Registro
+              // Registro - lo implementamos después
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -292,6 +329,216 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
+class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({super.key});
+
+  @override
+  State<ForgotPasswordPage> createState() =>
+      _ForgotPasswordPageState();
+}
+
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+  final TextEditingController emailController =
+      TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
+
+  void enviarRecuperacion() {
+    final String email = emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Debes ingresar tu correo electrónico.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (!email.contains('@') || !email.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Ingresa un correo electrónico válido.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          icon: const Icon(
+            Icons.mark_email_read_outlined,
+            color: Color(0xFF29ABE2),
+            size: 48,
+          ),
+          title: const Text(
+            'Correo enviado',
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            'Se enviaron las instrucciones de recuperación a $email.',
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF29ABE2),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Volver al inicio de sesión',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        title: const Text(
+          'Recuperar contraseña',
+        ),
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 32,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+
+              Center(
+                child: Image.asset(
+                  'assets/images/logo_foodplease.png',
+                  width: 150,
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
+                '¿Olvidaste tu contraseña?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                'Ingresa el correo asociado a tu cuenta y te enviaremos las instrucciones para recuperar tu contraseña.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.black54,
+                  height: 1.4,
+                ),
+              ),
+
+              const SizedBox(height: 36),
+
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.done,
+                autocorrect: false,
+                enableSuggestions: false,
+                stylusHandwritingEnabled: false,
+                onSubmitted: (_) {
+                  enviarRecuperacion();
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    color: Color(0xFF29ABE2),
+                  ),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFF29ABE2),
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                height: 52,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF29ABE2),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: enviarRecuperacion,
+                  child: const Text(
+                    'Enviar instrucciones',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Volver al inicio de sesión',
+                  style: TextStyle(
+                    color: Color(0xFF168FC2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -299,6 +546,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: const Color(0xFF29ABE2),
         foregroundColor: Colors.white,
@@ -310,6 +558,7 @@ class HomePage extends StatelessWidget {
         ),
         automaticallyImplyLeading: false,
       ),
+
       body: const Center(
         child: Padding(
           padding: EdgeInsets.all(24),
@@ -321,7 +570,9 @@ class HomePage extends StatelessWidget {
                 size: 70,
                 color: Color(0xFF29ABE2),
               ),
+
               SizedBox(height: 20),
+
               Text(
                 '¡Bienvenido a FoodPlease!',
                 textAlign: TextAlign.center,
@@ -330,7 +581,9 @@ class HomePage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               SizedBox(height: 8),
+
               Text(
                 'Aquí comenzará el catálogo de productos.',
                 textAlign: TextAlign.center,
