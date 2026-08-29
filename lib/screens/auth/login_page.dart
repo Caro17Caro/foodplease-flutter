@@ -454,12 +454,9 @@ class _LoginPageState extends State<LoginPage> {
                       height: 45,
                       child: OutlinedButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'La creación de cuenta se implementará en el siguiente flujo.',
-                              ),
-                            ),
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.register,
                           );
                         },
                         style: OutlinedButton.styleFrom(
