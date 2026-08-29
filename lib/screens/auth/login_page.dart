@@ -38,8 +38,6 @@ class _LoginPageState extends State<LoginPage> {
     final String email = emailController.text.trim();
     final String password = passwordController.text;
 
-    // Si falta algún dato, se muestra el mismo estado de error
-    // definido para el prototipo.
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         loginIncorrecto = true;
@@ -47,7 +45,6 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // Inicio de sesión simulado.
     if (email == correoPrueba && password == passwordPrueba) {
       setState(() {
         loginIncorrecto = false;
@@ -70,6 +67,47 @@ class _LoginPageState extends State<LoginPage> {
         loginIncorrecto = false;
       });
     }
+  }
+
+  void mostrarInformacionLegal(
+    String titulo,
+    String contenido,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            titulo,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Text(
+              contenido,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Cerrar',
+                style: TextStyle(
+                  color: Color(0xFF29ABE2),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -95,7 +133,6 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const SizedBox(height: 22),
 
-                    // Título
                     const Text(
                       '¡Bienvenido!',
                       textAlign: TextAlign.center,
@@ -108,7 +145,6 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 14),
 
-                    // Logo
                     Center(
                       child: Image.asset(
                         'assets/images/logo_foodplease.png',
@@ -120,7 +156,6 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 47),
 
-                    // Correo
                     const Text(
                       'Correo electrónico',
                       style: TextStyle(
@@ -179,7 +214,6 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 15),
 
-                    // Contraseña
                     const Text(
                       'Contraseña',
                       style: TextStyle(
@@ -193,16 +227,16 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       height: 48,
                       child: TextField(
-                              controller: passwordController,
-                              focusNode: passwordFocusNode,
-                              obscureText: obscurePassword,
-                              keyboardType: TextInputType.visiblePassword,
-                              textInputAction: TextInputAction.done,
-                              stylusHandwritingEnabled: false,
-                              onChanged: (_) => limpiarError(),
-                              onSubmitted: (_) {
-                                iniciarSesion();
-                              },
+                        controller: passwordController,
+                        focusNode: passwordFocusNode,
+                        obscureText: obscurePassword,
+                        keyboardType: TextInputType.visiblePassword,
+                        textInputAction: TextInputAction.done,
+                        stylusHandwritingEnabled: false,
+                        onChanged: (_) => limpiarError(),
+                        onSubmitted: (_) {
+                          iniciarSesion();
+                        },
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF303030),
@@ -250,19 +284,19 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    // Mensaje pantalla 02
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 180),
                       child: loginIncorrecto
-                          ? Padding(
-                              key: const ValueKey('login-error'),
-                              padding: const EdgeInsets.only(
+                          ? const Padding(
+                              key: ValueKey('login-error'),
+                              padding: EdgeInsets.only(
                                 top: 8,
                                 bottom: 2,
                               ),
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
                                   Icon(
                                     Icons.warning_amber_rounded,
                                     size: 17,
@@ -289,7 +323,6 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 8),
 
-                    // Iniciar sesión
                     SizedBox(
                       height: 46,
                       child: FilledButton(
@@ -314,7 +347,6 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 2),
 
-                    // Recuperar contraseña
                     Center(
                       child: TextButton(
                         onPressed: () {
@@ -342,7 +374,6 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 8),
 
-                    // Separador
                     const Row(
                       children: [
                         Expanded(
@@ -352,7 +383,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10,
+                          ),
                           child: Text(
                             'o',
                             style: TextStyle(
@@ -377,12 +410,9 @@ class _LoginPageState extends State<LoginPage> {
                       height: 45,
                       child: FilledButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'El inicio con Google se implementará en el siguiente flujo.',
-                              ),
-                            ),
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.googleLogin,
                           );
                         },
                         style: FilledButton.styleFrom(
@@ -393,9 +423,9 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(7),
                           ),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Text(
                               'G',
                               style: TextStyle(
@@ -453,38 +483,83 @@ class _LoginPageState extends State<LoginPage> {
 
                     const Spacer(),
 
-                    const Padding(
-                      padding: EdgeInsets.only(
+                    Padding(
+                      padding: const EdgeInsets.only(
                         top: 30,
                         bottom: 20,
                       ),
-                      child: Text.rich(
-                        TextSpan(
-                          text: 'Al hacer clic en continuar, aceptas nuestros ',
-                          children: [
-                            TextSpan(
-                              text: 'Términos de servicio',
-                              style: TextStyle(
-                                color: Color(0xFF444444),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Al hacer clic en continuar, aceptas nuestros',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 9,
+                              height: 1.5,
+                              color: Color(0xFF969696),
+                            ),
+                          ),
+
+                          const SizedBox(height: 2),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  mostrarInformacionLegal(
+                                    'Términos de servicio',
+                                    'FoodPlease es un prototipo académico '
+                                    'desarrollado para representar el '
+                                    'funcionamiento de una aplicación móvil '
+                                    'de pedidos de comida. El uso de esta '
+                                    'aplicación simulada está destinado '
+                                    'únicamente a fines educativos y '
+                                    'demostrativos.',
+                                  );
+                                },
+                                child: const Text(
+                                  'Términos de servicio',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: Color(0xFF29ABE2),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
-                            ),
-                            TextSpan(
-                              text: ' y\n',
-                            ),
-                            TextSpan(
-                              text: 'Política de privacidad',
-                              style: TextStyle(
-                                color: Color(0xFF444444),
+
+                              const Text(
+                                ' y ',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Color(0xFF969696),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 9,
-                          height: 1.5,
-                          color: Color(0xFF969696),
-                        ),
+
+                              InkWell(
+                                onTap: () {
+                                  mostrarInformacionLegal(
+                                    'Política de privacidad',
+                                    'FoodPlease utiliza información simulada '
+                                    'para representar funciones como inicio '
+                                    'de sesión, pedidos, direcciones y '
+                                    'métodos de pago. Este prototipo no '
+                                    'almacena ni procesa información personal '
+                                    'real de los usuarios.',
+                                  );
+                                },
+                                child: const Text(
+                                  'Política de privacidad',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: Color(0xFF29ABE2),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
