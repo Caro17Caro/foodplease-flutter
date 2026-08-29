@@ -1,55 +1,421 @@
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF29ABE2),
-        foregroundColor: Colors.white,
-        title: const Text(
-          'FoodPlease',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
+      body: SafeArea(
+        child: isLoading ? _buildSkeletonHome() : _buildHomeContent(),
+      ),
+      bottomNavigationBar: _buildBottomNavigation(),
+    );
+  }
+
+  Widget _buildSkeletonHome() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _skeletonBox(height: 44, borderRadius: 10),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 38,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: 4,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (_, _) {
+                return _skeletonBox(width: 95, height: 38, borderRadius: 8);
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          _skeletonBox(height: 125, borderRadius: 10),
+          const SizedBox(height: 18),
+          _skeletonBox(width: 110, height: 16, borderRadius: 4),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 105,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: 4,
+              separatorBuilder: (_, _) => const SizedBox(width: 18),
+              itemBuilder: (_, _) {
+                return Column(
+                  children: [
+                    _skeletonCircle(size: 64),
+                    const SizedBox(height: 8),
+                    _skeletonBox(width: 70, height: 10, borderRadius: 4),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          _skeletonBox(width: 120, height: 16, borderRadius: 4),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildSkeletonFoodCard()),
+              const SizedBox(width: 16),
+              Expanded(child: _buildSkeletonFoodCard()),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSearchBar(),
+          const SizedBox(height: 10),
+          _buildCategories(),
+          const SizedBox(height: 16),
+          _buildBanner(),
+          const SizedBox(height: 18),
+          const Text(
+            'Restaurantes destacados',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 14),
+          _buildRestaurants(),
+          const SizedBox(height: 22),
+          const Text(
+            'Recomendados para ti',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildRecommendedCard(
+                  imagePath: 'assets/images/churrasco_italiano.jpg',
+                  title: 'Doble Carne',
+                  restaurant: 'La Casa de la Hamburguesa',
+                  price: '\$8.990',
+                  rating: '4.9',
+                  reviews: '(2,000+)',
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildRecommendedCard(
+                  imagePath: 'assets/images/pizza_burrata.jpeg',
+                  title: 'Pizza Burrata - Pesto',
+                  restaurant: 'Pizzería Napoli',
+                  price: '\$10.990',
+                  rating: '4.8',
+                  reviews: '(1,500+)',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F3F3),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: const Row(
+        children: [
+          Icon(Icons.search, color: Colors.black54),
+          SizedBox(width: 10),
+          Text('Buscar', style: TextStyle(color: Colors.black45, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategories() {
+    const categories = ['Hamburguesas', 'Pizzas', 'Completos', 'Bebidas'];
+
+    return SizedBox(
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F3F3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE0E0E0)),
+            ),
+            child: Text(
+              categories[index],
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBanner() {
+    return Container(
+      height: 125,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        image: const DecorationImage(
+          image: AssetImage('assets/images/pizza_burrata.jpeg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: LinearGradient(
+            colors: [Colors.black.withValues(alpha: 0.72), Colors.transparent],
           ),
         ),
-        automaticallyImplyLeading: false,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
+        child: const Align(
+          alignment: Alignment.centerLeft,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.restaurant,
-                size: 70,
-                color: Color(0xFF29ABE2),
-              ),
-              SizedBox(height: 20),
               Text(
-                '¡Bienvenido a FoodPlease!',
-                textAlign: TextAlign.center,
+                '¿Qué quieres\ncomer hoy?',
                 style: TextStyle(
+                  color: Colors.white,
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
+                  height: 1.1,
                 ),
               ),
               SizedBox(height: 8),
               Text(
-                'Aquí comenzará el catálogo de productos.',
-                textAlign: TextAlign.center,
+                'Encuentra tus favoritos\nen FoodPlease',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
+                  color: Colors.white,
+                  fontSize: 13,
+                  height: 1.3,
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRestaurants() {
+    final restaurants = [
+      {
+        'image': 'assets/images/barros_luco.jpeg',
+        'name': 'La Casa de la\nHamburguesa',
+      },
+      {
+        'image': 'assets/images/pizza_carbonara.jpeg',
+        'name': 'Pizzería\nNapoli',
+      },
+      {
+        'image': 'assets/images/completo_italiano.jpeg',
+        'name': 'El Maestro del\nCompleto',
+      },
+      {'image': 'assets/images/lomito.jpeg', 'name': 'Empanadas\nAldina'},
+    ];
+
+    return SizedBox(
+      height: 120,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: restaurants.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 18),
+        itemBuilder: (context, index) {
+          final restaurant = restaurants[index];
+
+          return SizedBox(
+            width: 80,
+            child: Column(
+              children: [
+                Container(
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                    image: DecorationImage(
+                      image: AssetImage(restaurant['image']!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  restaurant['name']!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 11, height: 1.15),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRecommendedCard({
+    required String imagePath,
+    required String title,
+    required String restaurant,
+    required String price,
+    required String rating,
+    required String reviews,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: AspectRatio(
+            aspectRatio: 1.15,
+            child: Image.asset(imagePath, fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          restaurant,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 11, color: Colors.black54),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Text(
+              '$price.-',
+              style: const TextStyle(fontSize: 11, color: Colors.black54),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.star, size: 14, color: Colors.amber),
+            const SizedBox(width: 2),
+            Text(rating, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 3),
+            Expanded(
+              child: Text(
+                reviews,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 10, color: Colors.black45),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigation() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: 0,
+      selectedItemColor: const Color(0xFF29ABE2),
+      unselectedItemColor: Colors.black54,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.explore_outlined),
+          label: 'Explorar',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.shopping_cart_outlined),
+          label: 'Carrito',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications_none),
+          label: 'Notificaciones',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          label: 'Perfil',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkeletonFoodCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _skeletonBox(height: 150, borderRadius: 8),
+        const SizedBox(height: 10),
+        _skeletonBox(width: 70, height: 12, borderRadius: 4),
+        const SizedBox(height: 8),
+        _skeletonBox(width: 100, height: 10, borderRadius: 4),
+      ],
+    );
+  }
+
+  Widget _skeletonBox({
+    double? width,
+    required double height,
+    double borderRadius = 6,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDEDED),
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+    );
+  }
+
+  Widget _skeletonCircle({required double size}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: Color(0xFFEDEDED),
+        shape: BoxShape.circle,
       ),
     );
   }
