@@ -248,34 +248,55 @@ class _OrderProcessingPageState
 
                     const Spacer(flex: 3),
 
+                    // ==================================================
+                    // SEGUIR PEDIDO
+                    // ==================================================
+
                     SizedBox(
                       width: double.infinity,
                       height: 48,
                       child: FilledButton(
+                        // Toque normal:
+                        // abre pantalla 45 Seguimiento.
                         onPressed: () {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'El seguimiento del pedido se conectará en la pantalla 45.',
-                              ),
-                            ),
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.orderTracking,
+                            arguments: 'online',
                           );
                         },
+
+                        // Mantener presionado:
+                        // abre pantalla 46 Sin conexión.
+                        onLongPress: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.orderTracking,
+                            arguments: 'offline',
+                          );
+                        },
+
                         style: FilledButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              primaryColor,
+                          foregroundColor:
+                              Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(
+                          shape:
+                              RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.circular(7),
+                                BorderRadius.circular(
+                              7,
+                            ),
                           ),
                         ),
+
                         child: const Text(
                           'Seguir pedido',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight:
+                                FontWeight.w500,
                           ),
                         ),
                       ),
@@ -396,21 +417,29 @@ class _OrderProcessingPageState
                       width: double.infinity,
                       height: 48,
                       child: FilledButton(
-                        onPressed: _intentarNuevamente,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
+                        onPressed:
+                            _intentarNuevamente,
+                        style:
+                            FilledButton.styleFrom(
+                          backgroundColor:
+                              primaryColor,
+                          foregroundColor:
+                              Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(
+                          shape:
+                              RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.circular(7),
+                                BorderRadius.circular(
+                              7,
+                            ),
                           ),
                         ),
                         child: const Text(
                           'Intentar nuevamente',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight:
+                                FontWeight.w500,
                           ),
                         ),
                       ),
@@ -426,7 +455,8 @@ class _OrderProcessingPageState
                         'Volver al resumen del pedido',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF777777),
+                          color:
+                              Color(0xFF777777),
                         ),
                       ),
                     ),
@@ -474,6 +504,10 @@ class _OrderProcessingPageState
   }
 }
 
+// ============================================================
+// INFORMACIÓN DE CONFIRMACIÓN
+// ============================================================
+
 class _ConfirmationRow extends StatelessWidget {
   final String title;
   final String value;
@@ -496,7 +530,8 @@ class _ConfirmationRow extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 11.5,
-              color: const Color(0xFF555555),
+              color:
+                  const Color(0xFF555555),
               fontWeight: bold
                   ? FontWeight.w700
                   : FontWeight.w400,
@@ -510,7 +545,8 @@ class _ConfirmationRow extends StatelessWidget {
           value,
           style: TextStyle(
             fontSize: 12,
-            color: const Color(0xFF303030),
+            color:
+                const Color(0xFF303030),
             fontWeight: bold
                 ? FontWeight.w700
                 : FontWeight.w500,

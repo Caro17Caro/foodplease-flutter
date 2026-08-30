@@ -15,8 +15,9 @@ import '../screens/checkout/checkout_page.dart';
 import '../screens/checkout/payment_method_page.dart';
 
 import '../screens/checkout/order_summary_page.dart';
-
 import '../screens/checkout/order_processing_page.dart';
+
+import '../screens/order/order_tracking_page.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -54,6 +55,9 @@ class AppRoutes {
 
   static const String orderProcessing =
     '/order-processing';
+
+  static const String orderTracking =
+    '/order-tracking';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -95,6 +99,9 @@ class AppRoutes {
 
       orderProcessing: (context) =>
           const OrderProcessingPage(),
+
+      orderTracking: (context) =>
+          const OrderTrackingPage(),
     };
   }
 }
