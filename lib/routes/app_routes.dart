@@ -11,6 +11,9 @@ import '../screens/home/no_results_page.dart';
 import '../screens/restaurant/restaurant_page.dart';
 import '../screens/restaurant/product_detail_page.dart';
 import '../screens/cart/cart_page.dart';
+import '../screens/profile/profile_page.dart';
+import '../screens/profile/edit_profile_page.dart';
+import '../screens/profile/addresses_page.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -25,6 +28,10 @@ class AppRoutes {
   static const String productDetail = '/product-detail';
   static const String cart = '/cart';
 
+  static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
+  static const String addresses = '/addresses';
+
   static Map<String, WidgetBuilder> get routes {
     return {
       login: (context) => const LoginPage(),
@@ -38,6 +45,9 @@ class AppRoutes {
       restaurant: (context) => const RestaurantPage(),
       productDetail: (context) => const ProductDetailPage(),
       cart: (context) => const CartPage(),
+      profile: (context) => const ProfilePage(),
+      editProfile: (context) => const EditProfilePage(),
+      addresses: (context) => const AddressesPage(),
     };
   }
 }

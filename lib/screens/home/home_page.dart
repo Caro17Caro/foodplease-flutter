@@ -574,6 +574,19 @@ class _HomePageState extends State<HomePage> {
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
+      onTap: (index) {
+        if (index == 4) {
+          Navigator.pushNamed(context, AppRoutes.profile);
+        }
+
+        if (index == 2) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Agrega un producto para comenzar un carrito.'),
+            ),
+          );
+        }
+      },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
         BottomNavigationBarItem(
