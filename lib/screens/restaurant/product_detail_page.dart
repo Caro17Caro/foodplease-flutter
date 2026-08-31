@@ -59,6 +59,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 image: image,
                 description: description,
                 basePrice: basePrice,
+                extrasPrice: extrasPrice,
                 total: total,
               ),
       ),
@@ -113,6 +114,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     required String image,
     required String description,
     required int basePrice,
+    required int extrasPrice,
     required int total,
   }) {
     return Column(
@@ -300,6 +302,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context, {
+                    'name': name,
+                    'image': image,
+                    'description': description,
+                    'unitPrice': basePrice + extrasPrice,
                     'quantity': quantity,
                     'total': total,
                   });

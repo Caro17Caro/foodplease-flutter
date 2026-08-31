@@ -13,8 +13,13 @@ class _RestaurantPageState extends State<RestaurantPage> {
   static const Color primaryBlue = Color(0xFF29ABE2);
 
   bool isLoading = true;
+  bool initializedFromArguments = false;
+
   int cartQuantity = 0;
   int cartTotal = 0;
+
+  final List<Map<String, dynamic>> cartItems = [];
+
   String selectedCategory = 'Sandwich';
 
   @override
@@ -28,6 +33,38 @@ class _RestaurantPageState extends State<RestaurantPage> {
         });
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (initializedFromArguments) {
+      return;
+    }
+
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+
+    if (arguments is Map<String, dynamic>) {
+      final addedProduct = arguments['addedProduct'];
+
+      if (addedProduct is Map) {
+        final product = Map<String, dynamic>.from(addedProduct);
+
+        cartItems.add({
+          'name': product['name'] ?? 'Producto',
+          'image': product['image'] ?? '',
+          'description': product['description'] ?? '',
+          'unitPrice': product['unitPrice'] ?? 0,
+          'quantity': product['quantity'] ?? 1,
+          'total': product['total'] ?? 0,
+        });
+
+        _recalculateCart();
+      }
+    }
+
+    initializedFromArguments = true;
   }
 
   Future<void> _openProduct({
@@ -52,10 +89,30 @@ class _RestaurantPageState extends State<RestaurantPage> {
       final int total = result['total'] ?? price;
 
       setState(() {
-        cartQuantity += quantity;
-        cartTotal += total;
+        cartItems.add({
+          'name': result['name'] ?? name,
+          'image': result['image'] ?? image,
+          'description': result['description'] ?? description,
+          'unitPrice': result['unitPrice'] ?? price,
+          'quantity': quantity,
+          'total': total,
+        });
+
+        _recalculateCart();
       });
     }
+  }
+
+  void _recalculateCart() {
+    cartQuantity = cartItems.fold<int>(
+      0,
+      (sum, item) => sum + ((item['quantity'] ?? 0) as int),
+    );
+
+    cartTotal = cartItems.fold<int>(
+      0,
+      (sum, item) => sum + ((item['total'] ?? 0) as int),
+    );
   }
 
   @override
@@ -293,6 +350,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
         separatorBuilder: (_, _) => const SizedBox(width: 9),
         itemBuilder: (context, index) {
           final category = categories[index];
+
           final selected = selectedCategory == category;
 
           return InkWell(
@@ -361,7 +419,9 @@ class _RestaurantPageState extends State<RestaurantPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     const SizedBox(height: 5),
+
                     Text(
                       description,
                       maxLines: 2,
@@ -371,7 +431,9 @@ class _RestaurantPageState extends State<RestaurantPage> {
                         color: Colors.black54,
                       ),
                     ),
+
                     const Spacer(),
+
                     Text(
                       '\$${_formatPrice(price)}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -380,6 +442,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                 ),
               ),
             ),
+
             SizedBox(
               width: 115,
               height: double.infinity,
@@ -439,15 +502,30 @@ class _RestaurantPageState extends State<RestaurantPage> {
         child: SizedBox(
           height: 56,
           child: ElevatedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Tu pedido contiene $cartQuantity '
-                    'producto${cartQuantity == 1 ? '' : 's'}',
-                  ),
-                ),
+            onPressed: () async {
+              final result = await Navigator.pushNamed(
+                context,
+                AppRoutes.cart,
+                arguments: {'items': cartItems},
               );
+
+              if (result is Map<String, dynamic> && mounted) {
+                final returnedItems = result['items'];
+
+                if (returnedItems is List) {
+                  setState(() {
+                    cartItems
+                      ..clear()
+                      ..addAll(
+                        returnedItems.map(
+                          (item) => Map<String, dynamic>.from(item as Map),
+                        ),
+                      );
+
+                    _recalculateCart();
+                  });
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryBlue,
@@ -471,10 +549,12 @@ class _RestaurantPageState extends State<RestaurantPage> {
                     ),
                   ),
                 ),
+
                 const Text(
                   'Ver pedido',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+
                 Text(
                   '\$${_formatPrice(cartTotal)}',
                   style: const TextStyle(fontWeight: FontWeight.bold),

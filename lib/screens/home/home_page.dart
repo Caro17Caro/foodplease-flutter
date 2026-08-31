@@ -178,6 +178,62 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  int _parsePrice(String price) {
+    return int.parse(price.replaceAll('\$', '').replaceAll('.', ''));
+  }
+
+  Future<void> _openRecommendedProduct(Map<String, String> product) async {
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.productDetail,
+      arguments: {
+        'name': product['title']!,
+        'image': product['imagePath']!,
+        'description': _getProductDescription(product['title']!),
+        'price': _parsePrice(product['price']!),
+      },
+    );
+
+    if (result is Map<String, dynamic> && mounted) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.restaurant,
+        arguments: {'addedProduct': result},
+      );
+    }
+  }
+
+  String _getProductDescription(String productName) {
+    switch (productName) {
+      case 'Doble Carne':
+        return 'Hamburguesa doble carne, queso, tomate y salsa especial.';
+
+      case 'Barros Luco':
+        return 'Carne a la plancha con abundante queso fundido.';
+
+      case 'Pizza Burrata - Pesto':
+        return 'Pizza con burrata, pesto y selección de ingredientes frescos.';
+
+      case 'Pizza Carbonara':
+        return 'Pizza estilo carbonara con queso y salsa cremosa.';
+
+      case 'Completo Italiano':
+        return 'Completo con tomate, palta y mayonesa.';
+
+      case 'Completo Dinámico':
+        return 'Completo acompañado de tomate, palta, chucrut y salsas.';
+
+      case 'Coca-Cola':
+        return 'Bebida Coca-Cola individual.';
+
+      case 'Fanta':
+        return 'Bebida Fanta individual.';
+
+      default:
+        return 'Producto disponible en FoodPlease.';
+    }
+  }
+
   Widget _buildHomeContent() {
     final recommendedProducts = _getRecommendedProducts();
 
@@ -192,18 +248,25 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 16),
           _buildBanner(),
           const SizedBox(height: 18),
+
           const Text(
             'Restaurantes destacados',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
+
           const SizedBox(height: 14),
+
           _buildRestaurants(),
+
           const SizedBox(height: 22),
+
           const Text(
             'Recomendados para ti',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
+
           const SizedBox(height: 14),
+
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -215,9 +278,14 @@ class _HomePageState extends State<HomePage> {
                   price: recommendedProducts[0]['price']!,
                   rating: recommendedProducts[0]['rating']!,
                   reviews: recommendedProducts[0]['reviews']!,
+                  onTap: () {
+                    _openRecommendedProduct(recommendedProducts[0]);
+                  },
                 ),
               ),
+
               const SizedBox(width: 16),
+
               Expanded(
                 child: _buildRecommendedCard(
                   imagePath: recommendedProducts[1]['imagePath']!,
@@ -226,6 +294,9 @@ class _HomePageState extends State<HomePage> {
                   price: recommendedProducts[1]['price']!,
                   rating: recommendedProducts[1]['rating']!,
                   reviews: recommendedProducts[1]['reviews']!,
+                  onTap: () {
+                    _openRecommendedProduct(recommendedProducts[1]);
+                  },
                 ),
               ),
             ],
@@ -272,33 +343,35 @@ class _HomePageState extends State<HomePage> {
         itemCount: categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
+          final category = categories[index];
+
           return InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () {
               setState(() {
-                selectedCategory = categories[index];
+                selectedCategory = category;
               });
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: selectedCategory == categories[index]
+                color: selectedCategory == category
                     ? const Color(0xFF29ABE2)
                     : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: selectedCategory == categories[index]
+                  color: selectedCategory == category
                       ? const Color(0xFF29ABE2)
                       : const Color(0xFFE0E0E0),
                 ),
               ),
               child: Text(
-                categories[index],
+                category,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: selectedCategory == categories[index]
+                  color: selectedCategory == category
                       ? Colors.white
                       : Colors.black87,
                 ),
@@ -385,29 +458,35 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final restaurant = restaurants[index];
 
-          return SizedBox(
-            width: 80,
-            child: Column(
-              children: [
-                Container(
-                  width: 68,
-                  height: 68,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE0E0E0)),
-                    image: DecorationImage(
-                      image: AssetImage(restaurant['image']!),
-                      fit: BoxFit.cover,
+          return InkWell(
+            borderRadius: BorderRadius.circular(40),
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.restaurant);
+            },
+            child: SizedBox(
+              width: 80,
+              child: Column(
+                children: [
+                  Container(
+                    width: 68,
+                    height: 68,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      image: DecorationImage(
+                        image: AssetImage(restaurant['image']!),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  restaurant['name']!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 11, height: 1.15),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    restaurant['name']!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, height: 1.15),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -422,51 +501,68 @@ class _HomePageState extends State<HomePage> {
     required String price,
     required String rating,
     required String reviews,
+    required VoidCallback onTap,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: AspectRatio(
-            aspectRatio: 1.15,
-            child: Image.asset(imagePath, fit: BoxFit.cover),
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: AspectRatio(
+              aspectRatio: 1.15,
+              child: Image.asset(imagePath, fit: BoxFit.cover),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          restaurant,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 11, color: Colors.black54),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Text(
-              '$price.-',
-              style: const TextStyle(fontSize: 11, color: Colors.black54),
-            ),
-            const SizedBox(width: 6),
-            const Icon(Icons.star, size: 14, color: Colors.amber),
-            const SizedBox(width: 2),
-            Text(rating, style: const TextStyle(fontSize: 11)),
-            const SizedBox(width: 3),
-            Expanded(
-              child: Text(
-                reviews,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: Colors.black45),
+
+          const SizedBox(height: 8),
+
+          Text(
+            title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+
+          const SizedBox(height: 2),
+
+          Text(
+            restaurant,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11, color: Colors.black54),
+          ),
+
+          const SizedBox(height: 4),
+
+          Row(
+            children: [
+              Text(
+                '$price.-',
+                style: const TextStyle(fontSize: 11, color: Colors.black54),
               ),
-            ),
-          ],
-        ),
-      ],
+
+              const SizedBox(width: 6),
+
+              const Icon(Icons.star, size: 14, color: Colors.amber),
+
+              const SizedBox(width: 2),
+
+              Text(rating, style: const TextStyle(fontSize: 11)),
+
+              const SizedBox(width: 3),
+
+              Expanded(
+                child: Text(
+                  reviews,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10, color: Colors.black45),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
