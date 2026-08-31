@@ -34,9 +34,7 @@ class _LoginPageState extends State<LoginPage> {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Debes ingresar tu correo electrónico y contraseña.',
-          ),
+          content: Text('Debes ingresar tu correo electrónico y contraseña.'),
         ),
       );
       return;
@@ -44,11 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (!email.contains('@') || !email.contains('.')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Ingresa un correo electrónico válido.',
-          ),
-        ),
+        const SnackBar(content: Text('Ingresa un correo electrónico válido.')),
       );
       return;
     }
@@ -56,18 +50,13 @@ class _LoginPageState extends State<LoginPage> {
     if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'La contraseña debe tener al menos 6 caracteres.',
-          ),
+          content: Text('La contraseña debe tener al menos 6 caracteres.'),
         ),
       );
       return;
     }
 
-    Navigator.pushReplacementNamed(
-      context,
-      AppRoutes.home,
-    );
+    Navigator.pushReplacementNamed(context, AppRoutes.location);
   }
 
   @override
@@ -76,10 +65,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -98,10 +84,7 @@ class _LoginPageState extends State<LoginPage> {
               const Text(
                 'Inicia sesión para continuar',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
 
               const SizedBox(height: 40),
@@ -125,10 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFF29ABE2),
-                      width: 2,
-                    ),
+                    borderSide: BorderSide(color: Color(0xFF29ABE2), width: 2),
                   ),
                 ),
               ),
@@ -152,10 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   border: const OutlineInputBorder(),
                   focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFF29ABE2),
-                      width: 2,
-                    ),
+                    borderSide: BorderSide(color: Color(0xFF29ABE2), width: 2),
                   ),
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -164,9 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                       });
                     },
                     icon: Icon(
-                      obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      obscurePassword ? Icons.visibility_off : Icons.visibility,
                     ),
                   ),
                 ),
@@ -178,16 +153,11 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.forgotPassword,
-                    );
+                    Navigator.pushNamed(context, AppRoutes.forgotPassword);
                   },
                   child: const Text(
                     '¿Olvidaste tu contraseña?',
-                    style: TextStyle(
-                      color: Color(0xFF168FC2),
-                    ),
+                    style: TextStyle(color: Color(0xFF168FC2)),
                   ),
                 ),
               ),
@@ -207,10 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: iniciarSesion,
                   child: const Text(
                     'Iniciar sesión',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -219,23 +186,12 @@ class _LoginPageState extends State<LoginPage> {
 
               const Row(
                 children: [
-                  Expanded(
-                    child: Divider(),
-                  ),
+                  Expanded(child: Divider()),
                   Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                    ),
-                    child: Text(
-                      'o',
-                      style: TextStyle(
-                        color: Colors.black54,
-                      ),
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text('o', style: TextStyle(color: Colors.black54)),
                   ),
-                  Expanded(
-                    child: Divider(),
-                  ),
+                  Expanded(child: Divider()),
                 ],
               ),
 
@@ -244,24 +200,16 @@ class _LoginPageState extends State<LoginPage> {
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF168FC2),
-                  side: const BorderSide(
-                    color: Color(0xFF29ABE2),
-                  ),
+                  side: const BorderSide(color: Color(0xFF29ABE2)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 onPressed: () {},
-                icon: const Icon(
-                  Icons.account_circle_outlined,
-                ),
+                icon: const Icon(Icons.account_circle_outlined),
                 label: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 14,
-                  ),
-                  child: Text(
-                    'Continuar con Google',
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Text('Continuar con Google'),
                 ),
               ),
 
@@ -270,9 +218,7 @@ class _LoginPageState extends State<LoginPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '¿No tienes una cuenta?',
-                  ),
+                  const Text('¿No tienes una cuenta?'),
                   TextButton(
                     onPressed: () {},
                     child: const Text(
