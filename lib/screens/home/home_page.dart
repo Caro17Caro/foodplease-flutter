@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_routes.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -234,19 +236,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F3),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: const Row(
-        children: [
-          Icon(Icons.search, color: Colors.black54),
-          SizedBox(width: 10),
-          Text('Buscar', style: TextStyle(color: Colors.black45, fontSize: 16)),
-        ],
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () {
+        Navigator.pushNamed(context, AppRoutes.search);
+      },
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F3F3),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: const Row(
+          children: [
+            Icon(Icons.search, color: Colors.black54),
+            SizedBox(width: 10),
+            Text(
+              'Buscar',
+              style: TextStyle(color: Colors.black45, fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }

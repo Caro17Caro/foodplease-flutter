@@ -5,6 +5,9 @@ import '../screens/auth/login_page.dart';
 import '../screens/home/home_page.dart';
 import '../screens/home/location_page.dart';
 import '../screens/home/location_denied_page.dart';
+import '../screens/home/search_page.dart';
+import '../screens/home/search_results_page.dart';
+import '../screens/home/no_results_page.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -12,6 +15,9 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String location = '/location';
   static const String locationDenied = '/location-denied';
+  static const String search = '/search';
+  static const String searchResults = '/search-results';
+  static const String noResults = '/no-results';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -20,6 +26,9 @@ class AppRoutes {
       forgotPassword: (context) => const ForgotPasswordPage(),
       location: (context) => const LocationPage(),
       locationDenied: (context) => const LocationDeniedPage(),
+      search: (context) => const SearchPage(),
+      searchResults: (context) => const SearchResultsPage(),
+      noResults: (context) => const NoResultsPage(),
     };
   }
 }
