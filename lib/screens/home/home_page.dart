@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isLoading = true;
+  String selectedCategory = 'Hamburguesas';
 
   @override
   void initState() {
@@ -90,7 +91,94 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  List<Map<String, String>> _getRecommendedProducts() {
+    switch (selectedCategory) {
+      case 'Pizzas':
+        return [
+          {
+            'imagePath': 'assets/images/pizza_burrata.jpeg',
+            'title': 'Pizza Burrata - Pesto',
+            'restaurant': 'Pizzería Napoli',
+            'price': '\$10.990',
+            'rating': '4.8',
+            'reviews': '(1,500+)',
+          },
+          {
+            'imagePath': 'assets/images/pizza_carbonara.jpeg',
+            'title': 'Pizza Carbonara',
+            'restaurant': 'Pizzería Napoli',
+            'price': '\$11.490',
+            'rating': '4.7',
+            'reviews': '(980+)',
+          },
+        ];
+
+      case 'Completos':
+        return [
+          {
+            'imagePath': 'assets/images/completo_italiano.jpeg',
+            'title': 'Completo Italiano',
+            'restaurant': 'El Maestro del Completo',
+            'price': '\$4.990',
+            'rating': '4.8',
+            'reviews': '(1,200+)',
+          },
+          {
+            'imagePath': 'assets/images/completo_dinamico.jpeg',
+            'title': 'Completo Dinámico',
+            'restaurant': 'El Maestro del Completo',
+            'price': '\$5.490',
+            'rating': '4.7',
+            'reviews': '(870+)',
+          },
+        ];
+
+      case 'Bebidas':
+        return [
+          {
+            'imagePath': 'assets/images/coca_cola.jpeg',
+            'title': 'Coca-Cola',
+            'restaurant': 'FoodPlease',
+            'price': '\$1.990',
+            'rating': '4.9',
+            'reviews': '(2,100+)',
+          },
+          {
+            'imagePath': 'assets/images/fanta.jpeg',
+            'title': 'Fanta',
+            'restaurant': 'FoodPlease',
+            'price': '\$1.990',
+            'rating': '4.8',
+            'reviews': '(1,400+)',
+          },
+        ];
+
+      case 'Hamburguesas':
+      default:
+        return [
+          {
+            'imagePath': 'assets/images/churrasco_italiano.jpg',
+            'title': 'Doble Carne',
+            'restaurant': 'La Casa de la Hamburguesa',
+            'price': '\$8.990',
+            'rating': '4.9',
+            'reviews': '(2,000+)',
+          },
+          {
+            'imagePath': 'assets/images/barros_luco.jpeg',
+            'title': 'Barros Luco',
+            'restaurant': 'La Casa de la Hamburguesa',
+            'price': '\$7.990',
+            'rating': '4.8',
+            'reviews': '(1,300+)',
+          },
+        ];
+    }
+  }
+
   Widget _buildHomeContent() {
+    final recommendedProducts = _getRecommendedProducts();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       child: Column(
@@ -119,23 +207,23 @@ class _HomePageState extends State<HomePage> {
             children: [
               Expanded(
                 child: _buildRecommendedCard(
-                  imagePath: 'assets/images/churrasco_italiano.jpg',
-                  title: 'Doble Carne',
-                  restaurant: 'La Casa de la Hamburguesa',
-                  price: '\$8.990',
-                  rating: '4.9',
-                  reviews: '(2,000+)',
+                  imagePath: recommendedProducts[0]['imagePath']!,
+                  title: recommendedProducts[0]['title']!,
+                  restaurant: recommendedProducts[0]['restaurant']!,
+                  price: recommendedProducts[0]['price']!,
+                  rating: recommendedProducts[0]['rating']!,
+                  reviews: recommendedProducts[0]['reviews']!,
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: _buildRecommendedCard(
-                  imagePath: 'assets/images/pizza_burrata.jpeg',
-                  title: 'Pizza Burrata - Pesto',
-                  restaurant: 'Pizzería Napoli',
-                  price: '\$10.990',
-                  rating: '4.8',
-                  reviews: '(1,500+)',
+                  imagePath: recommendedProducts[1]['imagePath']!,
+                  title: recommendedProducts[1]['title']!,
+                  restaurant: recommendedProducts[1]['restaurant']!,
+                  price: recommendedProducts[1]['price']!,
+                  rating: recommendedProducts[1]['rating']!,
+                  reviews: recommendedProducts[1]['reviews']!,
                 ),
               ),
             ],
@@ -173,17 +261,37 @@ class _HomePageState extends State<HomePage> {
         itemCount: categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F3F3),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE0E0E0)),
-            ),
-            child: Text(
-              categories[index],
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          return InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              setState(() {
+                selectedCategory = categories[index];
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selectedCategory == categories[index]
+                    ? const Color(0xFF29ABE2)
+                    : const Color(0xFFF3F3F3),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: selectedCategory == categories[index]
+                      ? const Color(0xFF29ABE2)
+                      : const Color(0xFFE0E0E0),
+                ),
+              ),
+              child: Text(
+                categories[index],
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: selectedCategory == categories[index]
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
             ),
           );
         },
