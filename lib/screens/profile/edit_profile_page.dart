@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_routes.dart';
+import '../../state/cart_state.dart';
+
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
 
@@ -37,9 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     if (arguments is Map<String, dynamic>) {
       nameController.text = arguments['name'] ?? 'Usuario Usuario';
-
       emailController.text = arguments['email'] ?? 'usuario@email.com';
-
       phoneController.text = arguments['phone'] ?? '+56 9 1234 5678';
     } else {
       nameController.text = 'Usuario Usuario';
@@ -75,6 +76,54 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     Navigator.pop(context, {'name': name, 'email': email, 'phone': phone});
+  }
+
+  Future<void> _openCart() async {
+    if (CartState.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Agrega un producto para comenzar un carrito.'),
+        ),
+      );
+      return;
+    }
+
+    await Navigator.pushNamed(context, AppRoutes.cart);
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Widget _buildCartIcon() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        const Icon(Icons.shopping_cart_outlined),
+        if (CartState.quantity > 0)
+          Positioned(
+            right: -8,
+            top: -7,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: primaryBlue,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '${CartState.quantity}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   @override
@@ -238,24 +287,61 @@ class _EditProfilePageState extends State<EditProfilePage> {
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      items: const [
-        BottomNavigationBarItem(
+      onTap: (index) async {
+        switch (index) {
+          case 0:
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.home,
+              (route) => false,
+            );
+            break;
+
+          case 1:
+            await Navigator.pushNamed(context, AppRoutes.search);
+
+            if (mounted) {
+              setState(() {});
+            }
+            break;
+
+          case 2:
+            await _openCart();
+            break;
+
+          case 3:
+            if (!mounted) {
+              return;
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No tienes notificaciones nuevas.')),
+            );
+            break;
+
+          case 4:
+            Navigator.pop(context);
+            break;
+        }
+      },
+      items: [
+        const BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           label: 'Inicio',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.explore_outlined),
           label: 'Explorar',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart_outlined),
-          label: 'Carrito',
-        ),
-        BottomNavigationBarItem(
+        BottomNavigationBarItem(icon: _buildCartIcon(), label: 'Carrito'),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.notifications_none),
           label: 'Notificaciones',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Perfil',
+        ),
       ],
     );
   }

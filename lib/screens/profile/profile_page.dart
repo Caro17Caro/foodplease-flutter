@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../state/cart_state.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -275,6 +276,8 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.pop(dialogContext);
 
+                CartState.clear();
+
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   AppRoutes.login,
@@ -295,6 +298,54 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _openCart() async {
+    if (CartState.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Agrega un producto para comenzar un carrito.'),
+        ),
+      );
+      return;
+    }
+
+    await Navigator.pushNamed(context, AppRoutes.cart);
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Widget _buildCartIcon() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        const Icon(Icons.shopping_cart_outlined),
+        if (CartState.quantity > 0)
+          Positioned(
+            right: -8,
+            top: -7,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: primaryBlue,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '${CartState.quantity}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildBottomNavigation(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
@@ -303,41 +354,60 @@ class _ProfilePageState extends State<ProfilePage> {
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppRoutes.home,
-            (route) => false,
-          );
-        }
+      onTap: (index) async {
+        switch (index) {
+          case 0:
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.home,
+              (route) => false,
+            );
+            break;
 
-        if (index == 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Agrega un producto para comenzar un carrito.'),
-            ),
-          );
+          case 1:
+            await Navigator.pushNamed(context, AppRoutes.search);
+
+            if (mounted) {
+              setState(() {});
+            }
+            break;
+
+          case 2:
+            await _openCart();
+            break;
+
+          case 3:
+            if (!mounted) {
+              return;
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No tienes notificaciones nuevas.')),
+            );
+            break;
+
+          case 4:
+            break;
         }
       },
-      items: const [
-        BottomNavigationBarItem(
+      items: [
+        const BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           label: 'Inicio',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.explore_outlined),
           label: 'Explorar',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart_outlined),
-          label: 'Carrito',
-        ),
-        BottomNavigationBarItem(
+        BottomNavigationBarItem(icon: _buildCartIcon(), label: 'Carrito'),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.notifications_none),
           label: 'Notificaciones',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Perfil',
+        ),
       ],
     );
   }
