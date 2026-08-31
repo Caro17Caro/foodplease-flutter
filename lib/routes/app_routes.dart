@@ -8,6 +8,8 @@ import '../screens/home/location_denied_page.dart';
 import '../screens/home/search_page.dart';
 import '../screens/home/search_results_page.dart';
 import '../screens/home/no_results_page.dart';
+import '../screens/restaurant/restaurant_page.dart';
+import '../screens/restaurant/product_detail_page.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -18,6 +20,8 @@ class AppRoutes {
   static const String search = '/search';
   static const String searchResults = '/search-results';
   static const String noResults = '/no-results';
+  static const String restaurant = '/restaurant';
+  static const String productDetail = '/product-detail';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -29,6 +33,8 @@ class AppRoutes {
       search: (context) => const SearchPage(),
       searchResults: (context) => const SearchResultsPage(),
       noResults: (context) => const NoResultsPage(),
+      restaurant: (context) => const RestaurantPage(),
+      productDetail: (context) => const ProductDetailPage(),
     };
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_routes.dart';
+
 class SearchResultsPage extends StatelessWidget {
   const SearchResultsPage({super.key});
 
@@ -160,45 +162,51 @@ class SearchResultsPage extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE5E5E5)),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Color(0xFFF3F3F3),
-                  child: Icon(Icons.restaurant, color: primaryBlue, size: 28),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        restaurant,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '$category • $time',
-                        style: const TextStyle(color: Colors.black54),
-                      ),
-                    ],
+          InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.restaurant);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE5E5E5)),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Color(0xFFF3F3F3),
+                    child: Icon(Icons.restaurant, color: primaryBlue, size: 28),
                   ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 17,
-                  color: Colors.black38,
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          restaurant,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          '$category • $time',
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 17,
+                    color: Colors.black38,
+                  ),
+                ],
+              ),
             ),
           ),
 
