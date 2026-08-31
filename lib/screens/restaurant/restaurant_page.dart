@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../state/cart_state.dart';
 
 class RestaurantPage extends StatefulWidget {
   const RestaurantPage({super.key});
@@ -15,12 +16,10 @@ class _RestaurantPageState extends State<RestaurantPage> {
   bool isLoading = true;
   bool initializedFromArguments = false;
 
-  int cartQuantity = 0;
-  int cartTotal = 0;
-
-  final List<Map<String, dynamic>> cartItems = [];
-
   String selectedCategory = 'Sandwich';
+
+  int get cartQuantity => CartState.quantity;
+  int get cartTotal => CartState.total;
 
   @override
   void initState() {
@@ -49,18 +48,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
       final addedProduct = arguments['addedProduct'];
 
       if (addedProduct is Map) {
-        final product = Map<String, dynamic>.from(addedProduct);
-
-        cartItems.add({
-          'name': product['name'] ?? 'Producto',
-          'image': product['image'] ?? '',
-          'description': product['description'] ?? '',
-          'unitPrice': product['unitPrice'] ?? 0,
-          'quantity': product['quantity'] ?? 1,
-          'total': product['total'] ?? 0,
-        });
-
-        _recalculateCart();
+        CartState.addProduct(Map<String, dynamic>.from(addedProduct));
       }
     }
 
@@ -84,35 +72,23 @@ class _RestaurantPageState extends State<RestaurantPage> {
       },
     );
 
-    if (result is Map<String, dynamic> && mounted) {
-      final int quantity = result['quantity'] ?? 1;
-      final int total = result['total'] ?? price;
+    if (!mounted) {
+      return;
+    }
 
+    if (result is Map<String, dynamic>) {
       setState(() {
-        cartItems.add({
-          'name': result['name'] ?? name,
-          'image': result['image'] ?? image,
-          'description': result['description'] ?? description,
-          'unitPrice': result['unitPrice'] ?? price,
-          'quantity': quantity,
-          'total': total,
-        });
-
-        _recalculateCart();
+        CartState.addProduct(result);
       });
     }
   }
 
-  void _recalculateCart() {
-    cartQuantity = cartItems.fold<int>(
-      0,
-      (sum, item) => sum + ((item['quantity'] ?? 0) as int),
-    );
+  Future<void> _openCart() async {
+    await Navigator.pushNamed(context, AppRoutes.cart);
 
-    cartTotal = cartItems.fold<int>(
-      0,
-      (sum, item) => sum + ((item['total'] ?? 0) as int),
-    );
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -502,31 +478,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
         child: SizedBox(
           height: 56,
           child: ElevatedButton(
-            onPressed: () async {
-              final result = await Navigator.pushNamed(
-                context,
-                AppRoutes.cart,
-                arguments: {'items': cartItems},
-              );
-
-              if (result is Map<String, dynamic> && mounted) {
-                final returnedItems = result['items'];
-
-                if (returnedItems is List) {
-                  setState(() {
-                    cartItems
-                      ..clear()
-                      ..addAll(
-                        returnedItems.map(
-                          (item) => Map<String, dynamic>.from(item as Map),
-                        ),
-                      );
-
-                    _recalculateCart();
-                  });
-                }
-              }
-            },
+            onPressed: _openCart,
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryBlue,
               foregroundColor: Colors.white,

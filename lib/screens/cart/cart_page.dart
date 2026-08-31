@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../state/cart_state.dart';
+
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
 
@@ -11,15 +13,6 @@ class _CartPageState extends State<CartPage> {
   static const Color primaryBlue = Color(0xFF29ABE2);
 
   bool isLoading = true;
-  bool initialized = false;
-
-  List<Map<String, dynamic>> cartItems = [];
-
-  final Map<String, int> offerQuantities = {
-    'Tiramisú': 0,
-    'Coca-Cola': 0,
-    'Sprite': 0,
-  };
 
   @override
   void initState() {
@@ -34,100 +27,35 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!initialized) {
-      final arguments =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-      final items = arguments?['items'];
-
-      if (items is List) {
-        cartItems = items
-            .map((item) => Map<String, dynamic>.from(item as Map))
-            .toList();
-      }
-
-      initialized = true;
-    }
-  }
-
-  int get cartQuantity {
-    final productQuantity = cartItems.fold<int>(
-      0,
-      (sum, item) => sum + ((item['quantity'] ?? 0) as int),
-    );
-
-    final offerQuantity = offerQuantities.values.fold<int>(
-      0,
-      (sum, quantity) => sum + quantity,
-    );
-
-    return productQuantity + offerQuantity;
-  }
-
-  int get cartTotal {
-    final productTotal = cartItems.fold<int>(
-      0,
-      (sum, item) => sum + ((item['total'] ?? 0) as int),
-    );
-
-    final offersTotal =
-        (offerQuantities['Tiramisú'] ?? 0) * 6990 +
-        (offerQuantities['Coca-Cola'] ?? 0) * 1200 +
-        (offerQuantities['Sprite'] ?? 0) * 1200;
-
-    return productTotal + offersTotal;
-  }
+  int get cartQuantity => CartState.quantity;
+  int get cartTotal => CartState.total;
 
   void _increaseQuantity(int index) {
     setState(() {
-      final item = cartItems[index];
-
-      final int quantity = (item['quantity'] ?? 1) as int;
-      final int unitPrice = (item['unitPrice'] ?? 0) as int;
-
-      item['quantity'] = quantity + 1;
-      item['total'] = (quantity + 1) * unitPrice;
+      CartState.increaseProductQuantity(index);
     });
   }
 
   void _decreaseQuantity(int index) {
     setState(() {
-      final item = cartItems[index];
-
-      final int quantity = (item['quantity'] ?? 1) as int;
-      final int unitPrice = (item['unitPrice'] ?? 0) as int;
-
-      if (quantity <= 1) {
-        cartItems.removeAt(index);
-      } else {
-        item['quantity'] = quantity - 1;
-        item['total'] = (quantity - 1) * unitPrice;
-      }
+      CartState.decreaseProductQuantity(index);
     });
   }
 
   void _increaseOffer(String name) {
     setState(() {
-      offerQuantities[name] = (offerQuantities[name] ?? 0) + 1;
+      CartState.increaseOffer(name);
     });
   }
 
   void _decreaseOffer(String name) {
     setState(() {
-      final currentQuantity = offerQuantities[name] ?? 0;
-
-      if (currentQuantity > 0) {
-        offerQuantities[name] = currentQuantity - 1;
-      }
+      CartState.decreaseOffer(name);
     });
   }
 
   void _goBack() {
-    Navigator.pop(context, {'items': cartItems});
+    Navigator.pop(context);
   }
 
   @override
@@ -144,7 +72,7 @@ class _CartPageState extends State<CartPage> {
         body: SafeArea(
           child: isLoading
               ? _buildSkeleton()
-              : cartItems.isEmpty
+              : CartState.items.isEmpty
               ? _buildEmptyCart()
               : _buildCart(),
         ),
@@ -291,7 +219,7 @@ class _CartPageState extends State<CartPage> {
               const SizedBox(height: 18),
 
               ...List.generate(
-                cartItems.length,
+                CartState.items.length,
                 (index) => Padding(
                   padding: const EdgeInsets.only(bottom: 18),
                   child: _buildCartItem(index),
@@ -383,13 +311,17 @@ class _CartPageState extends State<CartPage> {
   }
 
   Widget _buildCartItem(int index) {
-    final item = cartItems[index];
+    final item = CartState.items[index];
 
     final String name = item['name'] ?? 'Producto';
+
     final String image =
         item['image'] ?? 'assets/images/churrasco_italiano.jpg';
+
     final String description = item['description'] ?? '';
+
     final int quantity = item['quantity'] ?? 1;
+
     final int total = item['total'] ?? 0;
 
     return Row(
@@ -502,7 +434,7 @@ class _CartPageState extends State<CartPage> {
     required int price,
     required String image,
   }) {
-    final int quantity = offerQuantities[name] ?? 0;
+    final int quantity = CartState.offerQuantities[name] ?? 0;
 
     return Row(
       children: [

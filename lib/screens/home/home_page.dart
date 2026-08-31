@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../state/cart_state.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -194,12 +195,43 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    if (result is Map<String, dynamic> && mounted) {
-      Navigator.pushNamed(
-        context,
-        AppRoutes.restaurant,
-        arguments: {'addedProduct': result},
+    if (!mounted) {
+      return;
+    }
+
+    if (result is Map<String, dynamic>) {
+      CartState.addProduct(result);
+
+      await Navigator.pushNamed(context, AppRoutes.restaurant);
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _openRestaurant() async {
+    await Navigator.pushNamed(context, AppRoutes.restaurant);
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _openCart() async {
+    if (CartState.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Agrega un producto para comenzar un carrito.'),
+        ),
       );
+      return;
+    }
+
+    await Navigator.pushNamed(context, AppRoutes.cart);
+
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -460,9 +492,7 @@ class _HomePageState extends State<HomePage> {
 
           return InkWell(
             borderRadius: BorderRadius.circular(40),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.restaurant);
-            },
+            onTap: _openRestaurant,
             child: SizedBox(
               width: 80,
               child: Column(
@@ -574,34 +604,87 @@ class _HomePageState extends State<HomePage> {
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      onTap: (index) {
-        if (index == 4) {
-          Navigator.pushNamed(context, AppRoutes.profile);
-        }
+      onTap: (index) async {
+        switch (index) {
+          case 0:
+            break;
 
-        if (index == 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Agrega un producto para comenzar un carrito.'),
-            ),
-          );
+          case 1:
+            await Navigator.pushNamed(context, AppRoutes.search);
+
+            if (mounted) {
+              setState(() {});
+            }
+            break;
+
+          case 2:
+            await _openCart();
+            break;
+
+          case 3:
+            if (!mounted) {
+              return;
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No tienes notificaciones nuevas.')),
+            );
+            break;
+
+          case 4:
+            await Navigator.pushNamed(context, AppRoutes.profile);
+
+            if (mounted) {
+              setState(() {});
+            }
+            break;
         }
       },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-        BottomNavigationBarItem(
+      items: [
+        const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.explore_outlined),
           label: 'Explorar',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart_outlined),
+          icon: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Icon(Icons.shopping_cart_outlined),
+              if (CartState.quantity > 0)
+                Positioned(
+                  right: -8,
+                  top: -7,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minWidth: 17,
+                      minHeight: 17,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF29ABE2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${CartState.quantity}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           label: 'Carrito',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.notifications_none),
           label: 'Notificaciones',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           label: 'Perfil',
         ),
