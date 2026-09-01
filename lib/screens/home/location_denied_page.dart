@@ -2,70 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
 
-class LocationPage extends StatelessWidget {
-  const LocationPage({super.key});
+class LocationDeniedPage extends StatelessWidget {
+  const LocationDeniedPage({super.key});
 
   static const Color primaryBlue = Color(0xFF29ABE2);
-
-  Future<void> _useCurrentLocation(BuildContext context) async {
-    final permissionGranted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text(
-            'Permiso de ubicación',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            'FoodPlease necesita acceder a tu ubicación para mostrarte restaurantes cercanos y calcular los tiempos de entrega.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text(
-                'No permitir',
-                style: TextStyle(color: Colors.black54),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryBlue,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Permitir'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (!context.mounted || permissionGranted == null) {
-      return;
-    }
-
-    if (permissionGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ubicación obtenida correctamente'),
-          duration: Duration(milliseconds: 700),
-        ),
-      );
-
-      await Future.delayed(const Duration(milliseconds: 700));
-
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-      }
-    } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.locationDenied);
-    }
-  }
 
   Future<void> _enterManualAddress(BuildContext context) async {
     String enteredAddress = '';
@@ -142,6 +82,10 @@ class LocationPage extends StatelessWidget {
     }
   }
 
+  void _tryAgain(BuildContext context) {
+    Navigator.pushReplacementNamed(context, AppRoutes.location);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,10 +118,10 @@ class LocationPage extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               const Text(
-                '¿Dónde quieres recibir\ntu pedido?',
+                'No pudimos acceder\na tu ubicación',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 26,
@@ -187,26 +131,55 @@ class LocationPage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 38),
+              const SizedBox(height: 26),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEBEE),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFEF9A9A)),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'El permiso de ubicación fue rechazado. Puedes ingresar tu dirección manualmente o intentarlo nuevamente.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.4,
+                          color: Color(0xFFB71C1C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
 
               Container(
                 width: 110,
                 height: 110,
                 decoration: BoxDecoration(
-                  color: primaryBlue.withValues(alpha: 0.12),
+                  color: const Color(0xFFF5F5F5),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.location_on,
+                  Icons.location_off,
                   size: 58,
-                  color: primaryBlue,
+                  color: Colors.black45,
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               const Text(
-                'Usaremos tu ubicación para mostrarte restaurantes cercanos y calcular los tiempos de entrega.',
+                'Para continuar, puedes ingresar una dirección manualmente o volver a intentar el acceso a tu ubicación.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -220,9 +193,9 @@ class LocationPage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 54,
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: () {
-                    _useCurrentLocation(context);
+                    _enterManualAddress(context);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryBlue,
@@ -232,9 +205,8 @@ class LocationPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: const Icon(Icons.my_location, size: 21),
-                  label: const Text(
-                    'Usar mi ubicación actual',
+                  child: const Text(
+                    'Ingresar dirección manualmente',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -244,10 +216,10 @@ class LocationPage extends StatelessWidget {
 
               TextButton(
                 onPressed: () {
-                  _enterManualAddress(context);
+                  _tryAgain(context);
                 },
                 child: const Text(
-                  'Ingresar dirección manualmente',
+                  'Intentar nuevamente',
                   style: TextStyle(
                     color: primaryBlue,
                     fontSize: 15,

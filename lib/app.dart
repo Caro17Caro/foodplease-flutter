@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'routes/app_routes.dart';
 
 class FoodPleaseApp extends StatelessWidget {
@@ -11,11 +12,8 @@ class FoodPleaseApp extends StatelessWidget {
       title: 'FoodPlease',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF29ABE2),
-        ).copyWith(
-          primary: const Color(0xFF29ABE2),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF29ABE2))
+            .copyWith(primary: const Color(0xFF29ABE2)),
       ),
       initialRoute: AppRoutes.orders,
       routes: AppRoutes.routes,
