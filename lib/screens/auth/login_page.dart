@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,10 +19,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool obscurePassword = true;
   bool loginIncorrecto = false;
-
-  // Credenciales simuladas para probar el prototipo.
-  static const String correoPrueba = 'usuario@prueba.com';
-  static const String passwordPrueba = '123456';
+  bool iniciandoSesion = false;
 
   @override
   void dispose() {
@@ -32,11 +30,15 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void iniciarSesion() {
+  Future<void> iniciarSesion() async {
     FocusScope.of(context).unfocus();
 
-    final String email = emailController.text.trim();
+    final String email = emailController.text.trim().toLowerCase();
     final String password = passwordController.text;
+
+    setState(() {
+      loginIncorrecto = false;
+    });
 
     if (email.isEmpty || password.isEmpty) {
       setState(() {
@@ -45,19 +47,55 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    if (email == correoPrueba && password == passwordPrueba) {
-      setState(() {
-        loginIncorrecto = false;
-      });
+    setState(() {
+      iniciandoSesion = true;
+    });
 
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.home,
+    try {
+      final response = await ApiService.login(email: email, password: password);
+
+      if (!mounted) return;
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        setState(() {
+          loginIncorrecto = false;
+        });
+
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+
+        return;
+      }
+
+      if (statusCode == 401 || statusCode == 400) {
+        setState(() {
+          loginIncorrecto = true;
+        });
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible iniciar sesión.',
+          ),
+        ),
       );
-    } else {
-      setState(() {
-        loginIncorrecto = true;
-      });
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          iniciandoSesion = false;
+        });
+      }
     }
   }
 
@@ -69,27 +107,19 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void mostrarInformacionLegal(
-    String titulo,
-    String contenido,
-  ) {
+  void mostrarInformacionLegal(String titulo, String contenido) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(
             titulo,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           content: SingleChildScrollView(
             child: Text(
               contenido,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
           ),
           actions: [
@@ -99,9 +129,7 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: const Text(
                 'Cerrar',
-                style: TextStyle(
-                  color: Color(0xFF29ABE2),
-                ),
+                style: TextStyle(color: Color(0xFF29ABE2)),
               ),
             ),
           ],
@@ -123,7 +151,8 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
+                minHeight:
+                    MediaQuery.of(context).size.height -
                     MediaQuery.of(context).padding.top -
                     MediaQuery.of(context).padding.bottom,
               ),
@@ -158,10 +187,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     const Text(
                       'Correo electrónico',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF303030),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF303030)),
                     ),
 
                     const SizedBox(height: 6),
@@ -216,10 +242,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     const Text(
                       'Contraseña',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF303030),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF303030)),
                     ),
 
                     const SizedBox(height: 6),
@@ -235,7 +258,9 @@ class _LoginPageState extends State<LoginPage> {
                         stylusHandwritingEnabled: false,
                         onChanged: (_) => limpiarError(),
                         onSubmitted: (_) {
-                          iniciarSesion();
+                          if (!iniciandoSesion) {
+                            iniciarSesion();
+                          }
                         },
                         style: const TextStyle(
                           fontSize: 14,
@@ -289,13 +314,9 @@ class _LoginPageState extends State<LoginPage> {
                       child: loginIncorrecto
                           ? const Padding(
                               key: ValueKey('login-error'),
-                              padding: EdgeInsets.only(
-                                top: 8,
-                                bottom: 2,
-                              ),
+                              padding: EdgeInsets.only(top: 8, bottom: 2),
                               child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Icon(
                                     Icons.warning_amber_rounded,
@@ -326,7 +347,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       height: 46,
                       child: FilledButton(
-                        onPressed: iniciarSesion,
+                        onPressed: iniciandoSesion ? null : iniciarSesion,
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF29ABE2),
                           foregroundColor: Colors.white,
@@ -335,13 +356,22 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(7),
                           ),
                         ),
-                        child: const Text(
-                          'Iniciar sesión',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        child: iniciandoSesion
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Iniciar sesión',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                       ),
                     ),
 
@@ -383,9 +413,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
                             'o',
                             style: TextStyle(
@@ -405,15 +433,11 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 18),
 
-                    // Google
                     SizedBox(
                       height: 45,
                       child: FilledButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.googleLogin,
-                          );
+                          Navigator.pushNamed(context, AppRoutes.googleLogin);
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFFF3F3F3),
@@ -449,15 +473,11 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 10),
 
-                    // Crear cuenta
                     SizedBox(
                       height: 45,
                       child: OutlinedButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.register,
-                          );
+                          Navigator.pushNamed(context, AppRoutes.register);
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF29ABE2),
@@ -471,9 +491,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: const Text(
                           'Crear cuenta',
-                          style: TextStyle(
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(fontSize: 14),
                         ),
                       ),
                     ),
@@ -481,10 +499,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Spacer(),
 
                     Padding(
-                      padding: const EdgeInsets.only(
-                        top: 30,
-                        bottom: 20,
-                      ),
+                      padding: const EdgeInsets.only(top: 30, bottom: 20),
                       child: Column(
                         children: [
                           const Text(
@@ -507,12 +522,11 @@ class _LoginPageState extends State<LoginPage> {
                                   mostrarInformacionLegal(
                                     'Términos de servicio',
                                     'FoodPlease es un prototipo académico '
-                                    'desarrollado para representar el '
-                                    'funcionamiento de una aplicación móvil '
-                                    'de pedidos de comida. El uso de esta '
-                                    'aplicación simulada está destinado '
-                                    'únicamente a fines educativos y '
-                                    'demostrativos.',
+                                        'desarrollado para representar el '
+                                        'funcionamiento de una aplicación móvil '
+                                        'de pedidos de comida. El uso de esta '
+                                        'aplicación está destinado únicamente '
+                                        'a fines educativos y demostrativos.',
                                   );
                                 },
                                 child: const Text(
@@ -537,12 +551,11 @@ class _LoginPageState extends State<LoginPage> {
                                 onTap: () {
                                   mostrarInformacionLegal(
                                     'Política de privacidad',
-                                    'FoodPlease utiliza información simulada '
-                                    'para representar funciones como inicio '
-                                    'de sesión, pedidos, direcciones y '
-                                    'métodos de pago. Este prototipo no '
-                                    'almacena ni procesa información personal '
-                                    'real de los usuarios.',
+                                    'FoodPlease utiliza la información '
+                                        'ingresada para representar funciones '
+                                        'como inicio de sesión, pedidos, '
+                                        'direcciones y métodos de pago dentro '
+                                        'del prototipo académico.',
                                   );
                                 },
                                 child: const Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -27,8 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool passwordsNoCoinciden = false;
   bool correoYaExiste = false;
   bool datosIncompletos = false;
-
-  static const String correoExistente = 'usuario@prueba.com';
+  bool registrando = false;
 
   @override
   void dispose() {
@@ -55,7 +55,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void crearCuenta() {
+  Future<void> crearCuenta() async {
     FocusScope.of(context).unfocus();
 
     final String nombre = nameController.text.trim();
@@ -86,15 +86,6 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    // Pantalla 13: correo ya registrado.
-    if (correo == correoExistente) {
-      setState(() {
-        correoYaExiste = true;
-      });
-      return;
-    }
-
-    // Pantalla 12: contraseñas distintas.
     if (password != confirmPassword) {
       setState(() {
         passwordsNoCoinciden = true;
@@ -109,35 +100,70 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    // Pantalla 14.
-    Navigator.pushNamed(
-      context,
-      AppRoutes.verifyEmail,
-      arguments: correo,
-    );
+    setState(() {
+      registrando = true;
+    });
+
+    try {
+      final response = await ApiService.register(
+        nombre: nombre,
+        email: correo,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 201) {
+        Navigator.pushNamed(context, AppRoutes.verifyEmail, arguments: correo);
+        return;
+      }
+
+      if (statusCode == 409) {
+        setState(() {
+          correoYaExiste = true;
+        });
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible crear la cuenta.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          registrando = false;
+        });
+      }
+    }
   }
 
-  void mostrarInformacionLegal(
-    String titulo,
-    String contenido,
-  ) {
+  void mostrarInformacionLegal(String titulo, String contenido) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(
             titulo,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           content: SingleChildScrollView(
             child: Text(
               contenido,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
           ),
           actions: [
@@ -147,9 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
               },
               child: const Text(
                 'Cerrar',
-                style: TextStyle(
-                  color: Color(0xFF29ABE2),
-                ),
+                style: TextStyle(color: Color(0xFF29ABE2)),
               ),
             ),
           ],
@@ -158,33 +182,20 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  InputDecoration campoDecoration({
-    required String hint,
-    Widget? suffixIcon,
-  }) {
+  InputDecoration campoDecoration({required String hint, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        color: Color(0xFFB5B5B5),
-        fontSize: 14,
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 14,
-      ),
+      hintStyle: const TextStyle(color: Color(0xFFB5B5B5), fontSize: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14),
       filled: true,
       fillColor: Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(7),
-        borderSide: const BorderSide(
-          color: Color(0xFFD8D8D8),
-        ),
+        borderSide: const BorderSide(color: Color(0xFFD8D8D8)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(7),
-        borderSide: const BorderSide(
-          color: Color(0xFF29ABE2),
-          width: 1.3,
-        ),
+        borderSide: const BorderSide(color: Color(0xFF29ABE2), width: 1.3),
       ),
       suffixIcon: suffixIcon,
     );
@@ -200,12 +211,11 @@ class _RegisterPageState extends State<RegisterPage> {
             FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
+                minHeight:
+                    MediaQuery.of(context).size.height -
                     MediaQuery.of(context).padding.top -
                     MediaQuery.of(context).padding.bottom,
               ),
@@ -258,10 +268,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     const Text(
                       'Nombre y Apellido',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF303030),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF303030)),
                     ),
 
                     const SizedBox(height: 6),
@@ -277,9 +284,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onSubmitted: (_) {
                           emailFocusNode.requestFocus();
                         },
-                        decoration: campoDecoration(
-                          hint: 'Ej.: Juan Perez',
-                        ),
+                        decoration: campoDecoration(hint: 'Ej.: Juan Perez'),
                       ),
                     ),
 
@@ -287,10 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     const Text(
                       'Correo electrónico',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF303030),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF303030)),
                     ),
 
                     const SizedBox(height: 6),
@@ -317,9 +319,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     if (correoYaExiste)
                       const Padding(
-                        padding: EdgeInsets.only(
-                          top: 6,
-                        ),
+                        padding: EdgeInsets.only(top: 6),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -346,10 +346,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     const Text(
                       'Contraseña',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF303030),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF303030)),
                     ),
 
                     const SizedBox(height: 6),
@@ -391,10 +388,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     const Text(
                       'Confirma contraseña',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF303030),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF303030)),
                     ),
 
                     const SizedBox(height: 6),
@@ -435,9 +429,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     if (passwordsNoCoinciden)
                       const Padding(
-                        padding: EdgeInsets.only(
-                          top: 6,
-                        ),
+                        padding: EdgeInsets.only(top: 6),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -462,9 +454,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     if (datosIncompletos)
                       const Padding(
-                        padding: EdgeInsets.only(
-                          top: 7,
-                        ),
+                        padding: EdgeInsets.only(top: 7),
                         child: Text(
                           'Revisa los datos ingresados. Todos los campos son obligatorios y la contraseña debe tener al menos 6 caracteres.',
                           style: TextStyle(
@@ -479,7 +469,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(
                       height: 46,
                       child: FilledButton(
-                        onPressed: crearCuenta,
+                        onPressed: registrando ? null : crearCuenta,
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF29ABE2),
                           foregroundColor: Colors.white,
@@ -488,13 +478,22 @@ class _RegisterPageState extends State<RegisterPage> {
                             borderRadius: BorderRadius.circular(7),
                           ),
                         ),
-                        child: const Text(
-                          'Crear cuenta',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        child: registrando
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Crear cuenta',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                       ),
                     ),
 
@@ -517,8 +516,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: Size.zero,
-                            tapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: const Text(
                             'Inicia sesión',
@@ -535,10 +533,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     const Spacer(),
 
                     Padding(
-                      padding: const EdgeInsets.only(
-                        top: 25,
-                        bottom: 20,
-                      ),
+                      padding: const EdgeInsets.only(top: 25, bottom: 20),
                       child: Column(
                         children: [
                           const Text(
@@ -560,9 +555,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                   mostrarInformacionLegal(
                                     'Términos de servicio',
                                     'FoodPlease es un prototipo académico '
-                                    'desarrollado para representar el '
-                                    'funcionamiento de una aplicación móvil '
-                                    'de pedidos de comida.',
+                                        'desarrollado para representar el '
+                                        'funcionamiento de una aplicación móvil '
+                                        'de pedidos de comida.',
                                   );
                                 },
                                 child: const Text(
@@ -570,8 +565,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   style: TextStyle(
                                     fontSize: 9,
                                     color: Color(0xFF29ABE2),
-                                    decoration:
-                                        TextDecoration.underline,
+                                    decoration: TextDecoration.underline,
                                   ),
                                 ),
                               ),
@@ -589,9 +583,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                   mostrarInformacionLegal(
                                     'Política de privacidad',
                                     'FoodPlease utiliza información '
-                                    'simulada para representar las '
-                                    'funciones del prototipo y no almacena '
-                                    'información personal real.',
+                                        'simulada para representar las '
+                                        'funciones del prototipo y no almacena '
+                                        'información personal real.',
                                   );
                                 },
                                 child: const Text(
@@ -599,8 +593,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   style: TextStyle(
                                     fontSize: 9,
                                     color: Color(0xFF29ABE2),
-                                    decoration:
-                                        TextDecoration.underline,
+                                    decoration: TextDecoration.underline,
                                   ),
                                 ),
                               ),
