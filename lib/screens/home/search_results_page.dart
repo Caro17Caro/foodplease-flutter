@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../state/cart_state.dart';
 
-class SearchResultsPage extends StatelessWidget {
+class SearchResultsPage extends StatefulWidget {
   const SearchResultsPage({super.key});
 
+  @override
+  State<SearchResultsPage> createState() => _SearchResultsPageState();
+}
+
+class _SearchResultsPageState extends State<SearchResultsPage> {
   static const Color primaryBlue = Color(0xFF29ABE2);
 
   Map<String, dynamic> _getResults(String query) {
@@ -20,12 +26,16 @@ class SearchResultsPage extends StatelessWidget {
             {
               'name': 'Pizza Burrata - Pesto',
               'image': 'assets/images/pizza_burrata.jpeg',
-              'price': '\$10.990',
+              'description':
+                  'Pizza con burrata, pesto, tomate y masa artesanal.',
+              'price': 10990,
             },
             {
               'name': 'Pizza Carbonara',
               'image': 'assets/images/pizza_carbonara.jpeg',
-              'price': '\$11.990',
+              'description':
+                  'Pizza cremosa estilo carbonara con queso y tocino.',
+              'price': 11990,
             },
           ],
         };
@@ -40,12 +50,15 @@ class SearchResultsPage extends StatelessWidget {
             {
               'name': 'Completo Italiano',
               'image': 'assets/images/completo_italiano.jpeg',
-              'price': '\$4.990',
+              'description':
+                  'Completo con tomate, palta, mayonesa y salchicha.',
+              'price': 4990,
             },
             {
               'name': 'Completo Dinámico',
               'image': 'assets/images/completo_dinamico.jpeg',
-              'price': '\$5.490',
+              'description': 'Completo con tomate, palta, chucrut, salsa americana y mayonesa.',
+              'price': 5490,
             },
           ],
         };
@@ -60,12 +73,14 @@ class SearchResultsPage extends StatelessWidget {
             {
               'name': 'Coca-Cola',
               'image': 'assets/images/coca_cola.jpeg',
-              'price': '\$1.990',
+              'description': 'Bebida Coca-Cola individual.',
+              'price': 1990,
             },
             {
               'name': 'Fanta',
               'image': 'assets/images/fanta.jpeg',
-              'price': '\$1.990',
+              'description': 'Bebida Fanta individual.',
+              'price': 1990,
             },
           ],
         };
@@ -81,16 +96,53 @@ class SearchResultsPage extends StatelessWidget {
             {
               'name': 'Doble Carne',
               'image': 'assets/images/churrasco_italiano.jpg',
-              'price': '\$8.990',
+              'description':
+                  'Hamburguesa doble carne, queso, tomate y salsa especial.',
+              'price': 8990,
             },
             {
               'name': 'Barros Luco',
               'image': 'assets/images/barros_luco.jpeg',
-              'price': '\$7.990',
+              'description': 'Carne a la plancha con abundante queso fundido.',
+              'price': 7990,
             },
           ],
         };
     }
+  }
+
+  Future<void> _openProduct(Map<String, dynamic> product) async {
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.productDetail,
+      arguments: {
+        'name': product['name'],
+        'image': product['image'],
+        'description': product['description'],
+        'price': product['price'],
+      },
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result is Map<String, dynamic>) {
+      setState(() {
+        CartState.addProduct(result);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${product['name']} agregado al carrito.')),
+      );
+    }
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]}.',
+    );
   }
 
   @override
@@ -164,8 +216,16 @@ class SearchResultsPage extends StatelessWidget {
 
           InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.restaurant);
+            onTap: () async {
+              await Navigator.pushNamed(
+                context,
+                AppRoutes.restaurant,
+                arguments: {'restaurant': restaurant},
+              );
+
+              if (mounted) {
+                setState(() {});
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(14),
@@ -230,7 +290,10 @@ class SearchResultsPage extends StatelessWidget {
                 imagePath: product['image'],
                 name: product['name'],
                 restaurant: restaurant,
-                price: product['price'],
+                price: '\$${_formatPrice(product['price'])}',
+                onTap: () {
+                  _openProduct(product);
+                },
               ),
             );
           }),
@@ -246,60 +309,69 @@ class _ProductResult extends StatelessWidget {
     required this.name,
     required this.restaurant,
     required this.price,
+    required this.onTap,
   });
 
   final String imagePath;
   final String name;
   final String restaurant;
   final String price;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 105,
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE5E5E5)),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 110,
-            height: double.infinity,
-            child: Image.asset(imagePath, fit: BoxFit.cover),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 105,
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE5E5E5)),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          children: [
+            SizedBox(
+              width: 110,
+              height: double.infinity,
+              child: Image.asset(imagePath, fit: BoxFit.cover),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    restaurant,
-                    style: const TextStyle(fontSize: 13, color: Colors.black54),
-                  ),
-                  const Spacer(),
-                  Text(
-                    price,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 5),
+                    Text(
+                      restaurant,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
                     ),
-                  ),
-                ],
+                    const Spacer(),
+                    Text(
+                      price,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

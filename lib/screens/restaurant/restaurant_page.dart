@@ -16,7 +16,17 @@ class _RestaurantPageState extends State<RestaurantPage> {
   bool isLoading = true;
   bool initializedFromArguments = false;
 
+  String restaurantName = 'La Casa de la Hamburguesa';
+  String restaurantImage = 'assets/images/churrasco_italiano.jpg';
+  String restaurantRating = '4.9';
+  String restaurantTime = '25-35 min';
+  String restaurantDescription = 'Hamburguesas • Sandwich • Comida rápida';
+
   String selectedCategory = 'Sandwich';
+
+  List<String> categories = ['Sandwich', 'Combos', 'Bebidas'];
+
+  Map<String, List<Map<String, dynamic>>> productsByCategory = {};
 
   int get cartQuantity => CartState.quantity;
   int get cartTotal => CartState.total;
@@ -24,6 +34,8 @@ class _RestaurantPageState extends State<RestaurantPage> {
   @override
   void initState() {
     super.initState();
+
+    _configureHamburgerRestaurant();
 
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -45,6 +57,12 @@ class _RestaurantPageState extends State<RestaurantPage> {
     final arguments = ModalRoute.of(context)?.settings.arguments;
 
     if (arguments is Map<String, dynamic>) {
+      final restaurant = arguments['restaurant'];
+
+      if (restaurant is String) {
+        _configureRestaurant(restaurant);
+      }
+
       final addedProduct = arguments['addedProduct'];
 
       if (addedProduct is Map) {
@@ -53,6 +71,231 @@ class _RestaurantPageState extends State<RestaurantPage> {
     }
 
     initializedFromArguments = true;
+  }
+
+  void _configureRestaurant(String restaurant) {
+    switch (restaurant) {
+      case 'Pizzería Napoli':
+        _configurePizzaRestaurant();
+        break;
+
+      case 'El Maestro del Completo':
+        _configureCompletoRestaurant();
+        break;
+
+      case 'FoodPlease Bebidas':
+        _configureBeverageRestaurant();
+        break;
+
+      case 'La Casa de la Hamburguesa':
+      default:
+        _configureHamburgerRestaurant();
+        break;
+    }
+  }
+
+  void _configureHamburgerRestaurant() {
+    restaurantName = 'La Casa de la Hamburguesa';
+    restaurantImage = 'assets/images/churrasco_italiano.jpg';
+    restaurantRating = '4.9';
+    restaurantTime = '25-35 min';
+    restaurantDescription = 'Hamburguesas • Sandwich • Comida rápida';
+
+    categories = ['Sandwich', 'Combos', 'Bebidas'];
+
+    selectedCategory = 'Sandwich';
+
+    productsByCategory = {
+      'Sandwich': [
+        {
+          'name': 'Doble Carne',
+          'description':
+              'Hamburguesa doble carne, queso, tomate y salsa especial.',
+          'price': 8990,
+          'image': 'assets/images/churrasco_italiano.jpg',
+        },
+        {
+          'name': 'Barros Luco',
+          'description': 'Carne a la plancha con abundante queso fundido.',
+          'price': 7990,
+          'image': 'assets/images/barros_luco.jpeg',
+        },
+        {
+          'name': 'Italiana',
+          'description': 'Producto no disponible temporalmente.',
+          'price': 0,
+          'image': '',
+          'available': false,
+        },
+        {
+          'name': 'Chacarero',
+          'description': 'Carne, tomate, porotos verdes y ají verde.',
+          'price': 7490,
+          'image': 'assets/images/churrasco_italiano.jpg',
+        },
+        {
+          'name': 'Aliado',
+          'description': 'Jamón y queso caliente en pan tostado.',
+          'price': 4990,
+          'image': 'assets/images/barros_luco.jpeg',
+        },
+      ],
+      'Combos': [
+        {
+          'name': 'Combo Doble Carne',
+          'description': 'Doble Carne acompañada de papas y bebida.',
+          'price': 11990,
+          'image': 'assets/images/churrasco_italiano.jpg',
+        },
+        {
+          'name': 'Combo Barros Luco',
+          'description': 'Barros Luco acompañado de papas y bebida.',
+          'price': 10990,
+          'image': 'assets/images/barros_luco.jpeg',
+        },
+      ],
+      'Bebidas': [
+        {
+          'name': 'Coca-Cola',
+          'description': 'Bebida Coca-Cola individual.',
+          'price': 1990,
+          'image': 'assets/images/coca_cola.jpeg',
+        },
+        {
+          'name': 'Fanta',
+          'description': 'Bebida Fanta individual.',
+          'price': 1990,
+          'image': 'assets/images/fanta.jpeg',
+        },
+      ],
+    };
+  }
+
+  void _configurePizzaRestaurant() {
+    restaurantName = 'Pizzería Napoli';
+    restaurantImage = 'assets/images/pizza_burrata.jpeg';
+    restaurantRating = '4.8';
+    restaurantTime = '30-40 min';
+    restaurantDescription = 'Pizzas • Cocina italiana • Artesanal';
+
+    categories = ['Pizzas', 'Bebidas'];
+
+    selectedCategory = 'Pizzas';
+
+    productsByCategory = {
+      'Pizzas': [
+        {
+          'name': 'Pizza Burrata - Pesto',
+          'description': 'Pizza con burrata, pesto, tomate y masa artesanal.',
+          'price': 10990,
+          'image': 'assets/images/pizza_burrata.jpeg',
+        },
+        {
+          'name': 'Pizza Carbonara',
+          'description': 'Pizza cremosa estilo carbonara con queso y tocino.',
+          'price': 11990,
+          'image': 'assets/images/pizza_carbonara.jpeg',
+        },
+        {
+          'name': 'Pizza Napolitana Pesto',
+          'description': 'Pizza napolitana con tomate, queso y pesto.',
+          'price': 9990,
+          'image': 'assets/images/pizza_napolitana_pesto.jpeg',
+        },
+      ],
+      'Bebidas': [
+        {
+          'name': 'Coca-Cola',
+          'description': 'Bebida Coca-Cola individual.',
+          'price': 1990,
+          'image': 'assets/images/coca_cola.jpeg',
+        },
+        {
+          'name': 'Sprite',
+          'description': 'Bebida Sprite individual.',
+          'price': 1990,
+          'image': 'assets/images/sprite.jpeg',
+        },
+      ],
+    };
+  }
+
+  void _configureCompletoRestaurant() {
+    restaurantName = 'El Maestro del Completo';
+    restaurantImage = 'assets/images/completo_italiano.jpeg';
+    restaurantRating = '4.7';
+    restaurantTime = '20-30 min';
+    restaurantDescription = 'Completos • Sandwich • Comida rápida';
+
+    categories = ['Completos', 'Bebidas'];
+
+    selectedCategory = 'Completos';
+
+    productsByCategory = {
+      'Completos': [
+        {
+          'name': 'Completo Italiano',
+          'description': 'Completo con tomate, palta, mayonesa y salchicha.',
+          'price': 4990,
+          'image': 'assets/images/completo_italiano.jpeg',
+        },
+        {
+          'name': 'Completo Dinámico',
+          'description': 'Completo con tomate, palta, chucrut, salsa americana y mayonesa.',
+          'price': 5490,
+          'image': 'assets/images/completo_dinamico.jpeg',
+        },
+      ],
+      'Bebidas': [
+        {
+          'name': 'Coca-Cola',
+          'description': 'Bebida Coca-Cola individual.',
+          'price': 1990,
+          'image': 'assets/images/coca_cola.jpeg',
+        },
+        {
+          'name': 'Fanta',
+          'description': 'Bebida Fanta individual.',
+          'price': 1990,
+          'image': 'assets/images/fanta.jpeg',
+        },
+      ],
+    };
+  }
+
+  void _configureBeverageRestaurant() {
+    restaurantName = 'FoodPlease Bebidas';
+    restaurantImage = 'assets/images/coca_cola.jpeg';
+    restaurantRating = '4.8';
+    restaurantTime = '15-25 min';
+    restaurantDescription = 'Bebidas • Refrescos';
+
+    categories = ['Bebidas'];
+
+    selectedCategory = 'Bebidas';
+
+    productsByCategory = {
+      'Bebidas': [
+        {
+          'name': 'Coca-Cola',
+          'description': 'Bebida Coca-Cola individual.',
+          'price': 1990,
+          'image': 'assets/images/coca_cola.jpeg',
+        },
+        {
+          'name': 'Fanta',
+          'description': 'Bebida Fanta individual.',
+          'price': 1990,
+          'image': 'assets/images/fanta.jpeg',
+        },
+        {
+          'name': 'Sprite',
+          'description': 'Bebida Sprite individual.',
+          'price': 1990,
+          'image': 'assets/images/sprite.jpeg',
+        },
+      ],
+    };
   }
 
   Future<void> _openProduct({
@@ -160,6 +403,8 @@ class _RestaurantPageState extends State<RestaurantPage> {
   }
 
   Widget _buildRestaurant() {
+    final currentProducts = productsByCategory[selectedCategory] ?? [];
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -168,10 +413,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
             SizedBox(
               height: 220,
               width: double.infinity,
-              child: Image.asset(
-                'assets/images/churrasco_italiano.jpg',
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset(restaurantImage, fit: BoxFit.cover),
             ),
             Positioned(
               top: 16,
@@ -198,9 +440,9 @@ class _RestaurantPageState extends State<RestaurantPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'La Casa de la Hamburguesa',
-                style: TextStyle(
+              Text(
+                restaurantName,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF202124),
@@ -209,23 +451,33 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
               const SizedBox(height: 8),
 
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.star, color: Colors.amber, size: 19),
-                  SizedBox(width: 4),
-                  Text('4.9', style: TextStyle(fontWeight: FontWeight.w600)),
-                  SizedBox(width: 14),
-                  Icon(Icons.access_time, size: 18, color: Colors.black54),
-                  SizedBox(width: 5),
-                  Text('25-35 min', style: TextStyle(color: Colors.black54)),
+                  const Icon(Icons.star, color: Colors.amber, size: 19),
+                  const SizedBox(width: 4),
+                  Text(
+                    restaurantRating,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 14),
+                  const Icon(
+                    Icons.access_time,
+                    size: 18,
+                    color: Colors.black54,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    restaurantTime,
+                    style: const TextStyle(color: Colors.black54),
+                  ),
                 ],
               ),
 
               const SizedBox(height: 7),
 
-              const Text(
-                'Hamburguesas • Sandwich • Comida rápida',
-                style: TextStyle(color: Colors.black54, fontSize: 14),
+              Text(
+                restaurantDescription,
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
 
               const SizedBox(height: 24),
@@ -244,70 +496,28 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
               const SizedBox(height: 14),
 
-              if (selectedCategory == 'Sandwich') ...[
-                _buildProduct(
-                  name: 'Doble Carne',
-                  description: 'Hamburguesa doble carne, queso, tomate y salsa especial.',
-                  price: 8990,
-                  image: 'assets/images/churrasco_italiano.jpg',
-                ),
-                const SizedBox(height: 14),
-                _buildProduct(
-                  name: 'Barros Luco',
-                  description:
-                      'Carne a la plancha con abundante queso fundido.',
-                  price: 7990,
-                  image: 'assets/images/barros_luco.jpeg',
-                ),
-                const SizedBox(height: 14),
-                _buildUnavailableProduct(),
-                const SizedBox(height: 14),
-                _buildProduct(
-                  name: 'Chacarero',
-                  description: 'Carne, tomate, porotos verdes y ají verde.',
-                  price: 7490,
-                  image: 'assets/images/churrasco_italiano.jpg',
-                ),
-                const SizedBox(height: 14),
-                _buildProduct(
-                  name: 'Aliado',
-                  description: 'Jamón y queso caliente en pan tostado.',
-                  price: 4990,
-                  image: 'assets/images/barros_luco.jpeg',
-                ),
-              ],
+              ...currentProducts.asMap().entries.map((entry) {
+                final product = entry.value;
 
-              if (selectedCategory == 'Combos') ...[
-                _buildProduct(
-                  name: 'Combo Doble Carne',
-                  description: 'Doble Carne acompañada de papas y bebida.',
-                  price: 11990,
-                  image: 'assets/images/churrasco_italiano.jpg',
-                ),
-                const SizedBox(height: 14),
-                _buildProduct(
-                  name: 'Combo Barros Luco',
-                  description: 'Barros Luco acompañado de papas y bebida.',
-                  price: 10990,
-                  image: 'assets/images/barros_luco.jpeg',
-                ),
-              ],
+                final bool available = product['available'] ?? true;
 
-              if (selectedCategory == 'Bebidas') ...[
-                _buildProduct(
-                  name: 'Coca-Cola',
-                  description: 'Bebida Coca-Cola individual.',
-                  price: 1990,
-                  image: 'assets/images/coca_cola.jpeg',
-                ),
-                const SizedBox(height: 14),
-                _buildProduct(
-                  name: 'Fanta',
-                  description: 'Bebida Fanta individual.',
-                  price: 1990,
-                  image: 'assets/images/fanta.jpeg',
-                ),
-              ],
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: entry.key == currentProducts.length - 1 ? 0 : 14,
+                  ),
+                  child: available
+                      ? _buildProduct(
+                          name: product['name'],
+                          description: product['description'],
+                          price: product['price'],
+                          image: product['image'],
+                        )
+                      : _buildUnavailableProduct(
+                          name: product['name'],
+                          description: product['description'],
+                        ),
+                );
+              }),
             ],
           ),
         ),
@@ -316,8 +526,6 @@ class _RestaurantPageState extends State<RestaurantPage> {
   }
 
   Widget _buildCategories() {
-    const categories = ['Sandwich', 'Combos', 'Bebidas'];
-
     return SizedBox(
       height: 38,
       child: ListView.separated(
@@ -395,9 +603,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 5),
-
                     Text(
                       description,
                       maxLines: 2,
@@ -407,9 +613,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                         color: Colors.black54,
                       ),
                     ),
-
                     const Spacer(),
-
                     Text(
                       '\$${_formatPrice(price)}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -418,7 +622,6 @@ class _RestaurantPageState extends State<RestaurantPage> {
                 ),
               ),
             ),
-
             SizedBox(
               width: 115,
               height: double.infinity,
@@ -430,7 +633,10 @@ class _RestaurantPageState extends State<RestaurantPage> {
     );
   }
 
-  Widget _buildUnavailableProduct() {
+  Widget _buildUnavailableProduct({
+    required String name,
+    required String description,
+  }) {
     return Opacity(
       opacity: 0.45,
       child: Container(
@@ -441,30 +647,33 @@ class _RestaurantPageState extends State<RestaurantPage> {
           border: Border.all(color: const Color(0xFFE4E4E4)),
         ),
         padding: const EdgeInsets.all(14),
-        child: const Row(
+        child: Row(
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Italiana',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  SizedBox(height: 7),
+                  const SizedBox(height: 7),
                   Text(
-                    'Producto no disponible temporalmente.',
-                    style: TextStyle(color: Colors.black54),
+                    description,
+                    style: const TextStyle(color: Colors.black54),
                   ),
-                  Spacer(),
-                  Text(
+                  const Spacer(),
+                  const Text(
                     'No disponible',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.block, size: 38, color: Colors.black38),
+            const Icon(Icons.block, size: 38, color: Colors.black38),
           ],
         ),
       ),
@@ -501,12 +710,10 @@ class _RestaurantPageState extends State<RestaurantPage> {
                     ),
                   ),
                 ),
-
                 const Text(
                   'Ver pedido',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-
                 Text(
                   '\$${_formatPrice(cartTotal)}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
