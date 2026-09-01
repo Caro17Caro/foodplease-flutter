@@ -138,11 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: Icons.credit_card_outlined,
               title: 'Métodos de pago',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Métodos de pago disponible próximamente.'),
-                  ),
-                );
+                Navigator.pushNamed(context, AppRoutes.profilePaymentMethods);
               },
             ),
 

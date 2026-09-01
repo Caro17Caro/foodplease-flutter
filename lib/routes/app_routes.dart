@@ -21,6 +21,7 @@ import '../screens/cart/cart_page.dart';
 import '../screens/profile/profile_page.dart';
 import '../screens/profile/edit_profile_page.dart';
 import '../screens/profile/addresses_page.dart';
+import '../screens/profile/payment_methods_page.dart';
 
 import '../screens/checkout/add_card_page.dart';
 import '../screens/checkout/address_search_page.dart';
@@ -76,6 +77,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String addresses = '/addresses';
+  static const String profilePaymentMethods = '/profile-payment-methods';
 
   // ============================================================
   // CHECKOUT
@@ -129,6 +131,7 @@ class AppRoutes {
       profile: (context) => const ProfilePage(),
       editProfile: (context) => const EditProfilePage(),
       addresses: (context) => const AddressesPage(),
+      profilePaymentMethods: (context) => const PaymentMethodsPage(),
 
       // Checkout
       checkout: (context) => const CheckoutPage(),
