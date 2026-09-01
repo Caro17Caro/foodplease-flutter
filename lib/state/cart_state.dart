@@ -47,6 +47,7 @@ class CartState {
       'name': product['name'] ?? 'Producto',
       'image': product['image'] ?? '',
       'description': product['description'] ?? '',
+      'restaurant': product['restaurant'] ?? 'FoodPlease',
       'unitPrice': product['unitPrice'] ?? 0,
       'quantity': product['quantity'] ?? 1,
       'total': product['total'] ?? 0,

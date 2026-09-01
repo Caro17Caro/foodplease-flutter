@@ -48,6 +48,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         (extraSauce ? 500 : 0);
 
     final total = (basePrice + extrasPrice) * quantity;
+    final String restaurant = arguments?['restaurant'] ?? 'FoodPlease';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -58,6 +59,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 name: name,
                 image: image,
                 description: description,
+                restaurant: restaurant,
                 basePrice: basePrice,
                 extrasPrice: extrasPrice,
                 total: total,
@@ -113,6 +115,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     required String name,
     required String image,
     required String description,
+    required String restaurant,
     required int basePrice,
     required int extrasPrice,
     required int total,
@@ -305,6 +308,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     'name': name,
                     'image': image,
                     'description': description,
+                    'restaurant': restaurant,
                     'unitPrice': basePrice + extrasPrice,
                     'quantity': quantity,
                     'total': total,

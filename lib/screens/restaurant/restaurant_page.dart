@@ -312,6 +312,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
         'image': image,
         'description': description,
         'price': price,
+        'restaurant': restaurantName,
       },
     );
 
