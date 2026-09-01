@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../state/cart_state.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -13,9 +14,73 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   static const Color primaryBlue = Color(0xFF29ABE2);
 
-  String userName = 'Usuario Usuario';
-  String userEmail = 'usuario@email.com';
+  String userName = 'Cargando...';
+  String userEmail = '';
   String userPhone = '+56 9 1234 5678';
+
+  bool cargandoPerfil = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarPerfil();
+  }
+
+  Future<void> _cargarPerfil() async {
+    try {
+      final response = await ApiService.getMe();
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        final user = response['user'];
+
+        if (user is Map<String, dynamic>) {
+          setState(() {
+            userName = user['nombre'] ?? 'Usuario';
+            userEmail = user['email'] ?? '';
+            cargandoPerfil = false;
+          });
+
+          return;
+        }
+      }
+
+      setState(() {
+        userName = 'Usuario';
+        userEmail = '';
+        cargandoPerfil = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible cargar el perfil.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        userName = 'Usuario';
+        userEmail = '';
+        cargandoPerfil = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,70 +184,85 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(width: 16),
 
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                userName,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
+          child: cargandoPerfil
+              ? const SizedBox(
+                  height: 40,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: primaryBlue,
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      userEmail,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                userEmail,
-                style: const TextStyle(fontSize: 13, color: Colors.black54),
-              ),
-            ],
-          ),
         ),
 
-        InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () async {
-            final result = await Navigator.pushNamed(
-              context,
-              AppRoutes.editProfile,
-              arguments: {
-                'name': userName,
-                'email': userEmail,
-                'phone': userPhone,
-              },
-            );
-
-            if (!context.mounted) {
-              return;
-            }
-
-            if (result is Map<String, dynamic>) {
-              setState(() {
-                userName = result['name'] ?? userName;
-                userEmail = result['email'] ?? userEmail;
-                userPhone = result['phone'] ?? userPhone;
-              });
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cambios guardados correctamente.'),
-                ),
+        if (!cargandoPerfil)
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () async {
+              final result = await Navigator.pushNamed(
+                context,
+                AppRoutes.editProfile,
+                arguments: {
+                  'name': userName,
+                  'email': userEmail,
+                  'phone': userPhone,
+                },
               );
-            }
-          },
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-            child: Row(
-              children: [
-                Text(
-                  'Editar perfil',
-                  style: TextStyle(fontSize: 12, color: Colors.black54),
-                ),
-                SizedBox(width: 3),
-                Icon(Icons.chevron_right, size: 20, color: Colors.black54),
-              ],
+
+              if (!context.mounted) {
+                return;
+              }
+
+              if (result is Map<String, dynamic>) {
+                setState(() {
+                  userName = result['name'] ?? userName;
+                  userEmail = result['email'] ?? userEmail;
+                  userPhone = result['phone'] ?? userPhone;
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cambios guardados correctamente.'),
+                  ),
+                );
+              }
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+              child: Row(
+                children: [
+                  Text(
+                    'Editar perfil',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  SizedBox(width: 3),
+                  Icon(Icons.chevron_right, size: 20, color: Colors.black54),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -277,6 +357,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pop(dialogContext);
 
                 CartState.clear();
+                ApiService.clearToken();
 
                 Navigator.pushNamedAndRemoveUntil(
                   context,
@@ -305,6 +386,7 @@ class _ProfilePageState extends State<ProfilePage> {
           content: Text('Agrega un producto para comenzar un carrito.'),
         ),
       );
+
       return;
     }
 
@@ -370,6 +452,7 @@ class _ProfilePageState extends State<ProfilePage> {
             if (mounted) {
               setState(() {});
             }
+
             break;
 
           case 2:
@@ -384,6 +467,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('No tienes notificaciones nuevas.')),
             );
+
             break;
 
           case 4:
