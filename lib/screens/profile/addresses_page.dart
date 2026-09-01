@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../state/cart_state.dart';
 
 class AddressesPage extends StatefulWidget {
@@ -13,18 +14,73 @@ class AddressesPage extends StatefulWidget {
 class _AddressesPageState extends State<AddressesPage> {
   static const Color primaryBlue = Color(0xFF29ABE2);
 
-  final List<Map<String, dynamic>> addresses = [
-    {
-      'title': 'Casa',
-      'address': 'Pasaje Matucana 8853, La Reina',
-      'icon': Icons.home_outlined,
-    },
-    {
-      'title': 'Trabajo',
-      'address': 'Av. Beaucheff 1425, Santiago',
-      'icon': Icons.work_outline,
-    },
-  ];
+  List<Map<String, dynamic>> addresses = [];
+
+  bool cargandoDirecciones = true;
+  bool procesandoDireccion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAddresses();
+  }
+
+  Future<void> _loadAddresses() async {
+    try {
+      final response = await ApiService.getAddresses();
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        final data = response['addresses'];
+
+        if (data is List) {
+          setState(() {
+            addresses = data
+                .whereType<Map>()
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
+
+            cargandoDirecciones = false;
+          });
+
+          return;
+        }
+      }
+
+      setState(() {
+        addresses = [];
+        cargandoDirecciones = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible cargar las direcciones.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        addresses = [];
+        cargandoDirecciones = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    }
+  }
 
   Future<void> _openCart() async {
     if (CartState.isEmpty) {
@@ -33,6 +89,7 @@ class _AddressesPageState extends State<AddressesPage> {
           content: Text('Agrega un producto para comenzar un carrito.'),
         ),
       );
+
       return;
     }
 
@@ -43,76 +100,391 @@ class _AddressesPageState extends State<AddressesPage> {
     }
   }
 
-  Future<void> _showAddressDialog({int? index}) async {
-    final bool isEditing = index != null;
+  Future<void> _showAddressDialog({Map<String, dynamic>? addressData}) async {
+    final bool isEditing = addressData != null;
 
-    String title = isEditing ? addresses[index]['title'] as String : '';
+    String nombre = isEditing ? (addressData['nombre'] ?? '').toString() : '';
 
-    String address = isEditing ? addresses[index]['address'] as String : '';
+    String direccion = isEditing
+        ? (addressData['direccion'] ?? '').toString()
+        : '';
 
-    final result = await showDialog<Map<String, String>>(
+    String comuna = isEditing ? (addressData['comuna'] ?? '').toString() : '';
+
+    String referencia = isEditing
+        ? (addressData['referencia'] ?? '').toString()
+        : '';
+
+    bool esPrincipal = isEditing ? addressData['es_principal'] == true : false;
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                isEditing ? 'Editar dirección' : 'Agregar nueva dirección',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      initialValue: nombre,
+                      onChanged: (value) {
+                        nombre = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Nombre',
+                        hintText: 'Ej: Casa, Trabajo',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: primaryBlue,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      initialValue: direccion,
+                      onChanged: (value) {
+                        direccion = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Dirección',
+                        hintText: 'Ej: Av. Providencia 1234',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: primaryBlue,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      initialValue: comuna,
+                      onChanged: (value) {
+                        comuna = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Comuna',
+                        hintText: 'Ej: Providencia',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: primaryBlue,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      initialValue: referencia,
+                      onChanged: (value) {
+                        referencia = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Referencia',
+                        hintText: 'Ej: Depto. 402, portón azul',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: primaryBlue,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeThumbColor: primaryBlue,
+                      title: const Text(
+                        'Dirección principal',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Será la dirección predeterminada para tus pedidos.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      value: esPrincipal,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          esPrincipal = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                  },
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final cleanNombre = nombre.trim();
+                    final cleanDireccion = direccion.trim();
+                    final cleanComuna = comuna.trim();
+                    final cleanReferencia = referencia.trim();
+
+                    if (cleanNombre.isEmpty ||
+                        cleanDireccion.isEmpty ||
+                        cleanComuna.isEmpty) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Completa nombre, dirección y comuna.'),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    Navigator.pop(dialogContext, {
+                      'nombre': cleanNombre,
+                      'direccion': cleanDireccion,
+                      'comuna': cleanComuna,
+                      'referencia': cleanReferencia,
+                      'es_principal': esPrincipal,
+                    });
+                  },
+                  child: Text(
+                    isEditing ? 'Guardar' : 'Agregar',
+                    style: const TextStyle(
+                      color: primaryBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    if (isEditing) {
+      await _updateAddress(
+        addressId: addressData['id'] as int,
+        nombre: result['nombre'] as String,
+        direccion: result['direccion'] as String,
+        comuna: result['comuna'] as String,
+        referencia: result['referencia'] as String,
+        esPrincipal: result['es_principal'] as bool,
+      );
+    } else {
+      await _createAddress(
+        nombre: result['nombre'] as String,
+        direccion: result['direccion'] as String,
+        comuna: result['comuna'] as String,
+        referencia: result['referencia'] as String,
+        esPrincipal: result['es_principal'] as bool,
+      );
+    }
+  }
+
+  Future<void> _createAddress({
+    required String nombre,
+    required String direccion,
+    required String comuna,
+    required String referencia,
+    required bool esPrincipal,
+  }) async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      procesandoDireccion = true;
+    });
+
+    try {
+      final response = await ApiService.createAddress(
+        nombre: nombre,
+        direccion: direccion,
+        comuna: comuna,
+        referencia: referencia,
+        esPrincipal: esPrincipal,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 201) {
+        await _loadAddresses();
+
+        if (!mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dirección agregada correctamente.')),
+        );
+
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible agregar la dirección.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          procesandoDireccion = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateAddress({
+    required int addressId,
+    required String nombre,
+    required String direccion,
+    required String comuna,
+    required String referencia,
+    required bool esPrincipal,
+  }) async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      procesandoDireccion = true;
+    });
+
+    try {
+      final response = await ApiService.updateAddress(
+        addressId: addressId,
+        nombre: nombre,
+        direccion: direccion,
+        comuna: comuna,
+        referencia: referencia,
+        esPrincipal: esPrincipal,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        await _loadAddresses();
+
+        if (!mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dirección actualizada correctamente.')),
+        );
+
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible actualizar la dirección.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          procesandoDireccion = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteAddress(Map<String, dynamic> addressData) async {
+    final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: Text(
-            isEditing ? 'Editar dirección' : 'Agregar nueva dirección',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          title: const Text(
+            'Eliminar dirección',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                initialValue: title,
-                onChanged: (value) {
-                  title = value;
-                },
-                decoration: InputDecoration(
-                  labelText: 'Nombre',
-                  hintText: 'Ej: Casa, Trabajo',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: primaryBlue,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              TextFormField(
-                initialValue: address,
-                onChanged: (value) {
-                  address = value;
-                },
-                decoration: InputDecoration(
-                  labelText: 'Dirección',
-                  hintText: 'Ingresa la dirección',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: primaryBlue,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          content: Text('¿Deseas eliminar "${addressData['nombre']}"?'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(dialogContext);
+                Navigator.pop(dialogContext, false);
               },
               child: const Text(
                 'Cancelar',
@@ -121,25 +493,12 @@ class _AddressesPageState extends State<AddressesPage> {
             ),
             TextButton(
               onPressed: () {
-                final cleanTitle = title.trim();
-                final cleanAddress = address.trim();
-
-                if (cleanTitle.isEmpty || cleanAddress.isEmpty) {
-                  ScaffoldMessenger.of(dialogContext).showSnackBar(
-                    const SnackBar(content: Text('Completa todos los campos.')),
-                  );
-                  return;
-                }
-
-                Navigator.pop(dialogContext, {
-                  'title': cleanTitle,
-                  'address': cleanAddress,
-                });
+                Navigator.pop(dialogContext, true);
               },
-              child: Text(
-                isEditing ? 'Guardar' : 'Agregar',
-                style: const TextStyle(
-                  color: primaryBlue,
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(
+                  color: Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -149,35 +508,83 @@ class _AddressesPageState extends State<AddressesPage> {
       },
     );
 
-    if (result == null || !mounted) {
+    if (confirm != true || !mounted) {
+      return;
+    }
+
+    await _deleteAddress(addressData['id'] as int);
+  }
+
+  Future<void> _deleteAddress(int addressId) async {
+    if (!mounted) {
       return;
     }
 
     setState(() {
-      if (isEditing) {
-        addresses[index] = {
-          'title': result['title'],
-          'address': result['address'],
-          'icon': addresses[index]['icon'],
-        };
-      } else {
-        addresses.add({
-          'title': result['title'],
-          'address': result['address'],
-          'icon': Icons.location_on_outlined,
-        });
-      }
+      procesandoDireccion = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEditing
-              ? 'Dirección actualizada correctamente.'
-              : 'Dirección agregada correctamente.',
+    try {
+      final response = await ApiService.deleteAddress(addressId);
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        await _loadAddresses();
+
+        if (!mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dirección eliminada correctamente.')),
+        );
+
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible eliminar la dirección.',
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          procesandoDireccion = false;
+        });
+      }
+    }
+  }
+
+  IconData _getAddressIcon(String nombre) {
+    final normalized = nombre.trim().toLowerCase();
+
+    if (normalized.contains('casa') || normalized.contains('hogar')) {
+      return Icons.home_outlined;
+    }
+
+    if (normalized.contains('trabajo') || normalized.contains('oficina')) {
+      return Icons.work_outline;
+    }
+
+    return Icons.location_on_outlined;
   }
 
   Widget _buildCartIcon() {
@@ -225,9 +632,11 @@ class _AddressesPageState extends State<AddressesPage> {
             color: Colors.black87,
             size: 20,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: procesandoDireccion
+              ? null
+              : () {
+                  Navigator.pop(context);
+                },
         ),
         title: const Text(
           'Mis direcciones',
@@ -239,81 +648,133 @@ class _AddressesPageState extends State<AddressesPage> {
         ),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-          children: [
-            const Text(
-              'Direcciones guardadas',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-            ),
+        child: cargandoDirecciones
+            ? const Center(child: CircularProgressIndicator(color: primaryBlue))
+            : RefreshIndicator(
+                color: primaryBlue,
+                onRefresh: _loadAddresses,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+                  children: [
+                    const Text(
+                      'Direcciones guardadas',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
 
-            const SizedBox(height: 18),
+                    const SizedBox(height: 18),
 
-            ...List.generate(addresses.length, (index) {
-              final item = addresses[index];
+                    if (addresses.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F8F8),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Column(
+                          children: [
+                            Icon(
+                              Icons.location_off_outlined,
+                              size: 42,
+                              color: Colors.black38,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Aún no tienes direcciones guardadas.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...List.generate(addresses.length, (index) {
+                        final item = addresses[index];
 
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index == addresses.length - 1 ? 0 : 12,
-                ),
-                child: _buildAddress(
-                  icon: item['icon'],
-                  title: item['title'],
-                  address: item['address'],
-                  onEdit: () {
-                    _showAddressDialog(index: index);
-                  },
-                ),
-              );
-            }),
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index == addresses.length - 1 ? 0 : 12,
+                          ),
+                          child: _buildAddress(addressData: item),
+                        );
+                      }),
 
-            const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-            OutlinedButton.icon(
-              onPressed: () {
-                _showAddressDialog();
-              },
-              icon: const Icon(Icons.add, color: primaryBlue),
-              label: const Text(
-                'Agregar nueva dirección',
-                style: TextStyle(
-                  color: primaryBlue,
-                  fontWeight: FontWeight.w600,
+                    OutlinedButton.icon(
+                      onPressed: procesandoDireccion
+                          ? null
+                          : () {
+                              _showAddressDialog();
+                            },
+                      icon: const Icon(Icons.add, color: primaryBlue),
+                      label: const Text(
+                        'Agregar nueva dirección',
+                        style: TextStyle(
+                          color: primaryBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 52),
+                        side: const BorderSide(color: primaryBlue),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                    if (procesandoDireccion) ...[
+                      const SizedBox(height: 20),
+                      const Center(
+                        child: CircularProgressIndicator(
+                          color: primaryBlue,
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 52),
-                side: const BorderSide(color: primaryBlue),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
   }
 
-  Widget _buildAddress({
-    required IconData icon,
-    required String title,
-    required String address,
-    required VoidCallback onEdit,
-  }) {
+  Widget _buildAddress({required Map<String, dynamic> addressData}) {
+    final nombre = (addressData['nombre'] ?? 'Dirección').toString();
+
+    final direccion = (addressData['direccion'] ?? '').toString();
+
+    final comuna = (addressData['comuna'] ?? '').toString();
+
+    final referencia = (addressData['referencia'] ?? '').toString();
+
+    final bool esPrincipal = addressData['es_principal'] == true;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE4E4E4)),
+        border: Border.all(
+          color: esPrincipal
+              ? primaryBlue.withValues(alpha: 0.45)
+              : const Color(0xFFE4E4E4),
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 23,
             backgroundColor: primaryBlue.withValues(alpha: 0.10),
-            child: Icon(icon, color: primaryBlue),
+            child: Icon(_getAddressIcon(nombre), color: primaryBlue),
           ),
 
           const SizedBox(width: 14),
@@ -322,37 +783,99 @@ class _AddressesPageState extends State<AddressesPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        nombre,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    if (esPrincipal) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: primaryBlue.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Principal',
+                          style: TextStyle(
+                            color: primaryBlue,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
+
                 const SizedBox(height: 4),
+
                 Text(
-                  address,
+                  comuna.isEmpty ? direccion : '$direccion, $comuna',
                   style: const TextStyle(fontSize: 12.5, color: Colors.black54),
                 ),
+
+                if (referencia.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Referencia: $referencia',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.black45,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
 
-          InkWell(
-            onTap: onEdit,
-            borderRadius: BorderRadius.circular(8),
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Row(
-                children: [
-                  Text(
-                    'Editar',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+          PopupMenuButton<String>(
+            enabled: !procesandoDireccion,
+            icon: const Icon(Icons.more_vert, color: Colors.black45),
+            onSelected: (value) {
+              if (value == 'edit') {
+                _showAddressDialog(addressData: addressData);
+              }
+
+              if (value == 'delete') {
+                _confirmDeleteAddress(addressData);
+              }
+            },
+            itemBuilder: (context) {
+              return const [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined, size: 20),
+                      SizedBox(width: 10),
+                      Text('Editar'),
+                    ],
                   ),
-                  Icon(Icons.chevron_right, color: Colors.black45),
-                ],
-              ),
-            ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text('Eliminar', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ];
+            },
           ),
         ],
       ),
@@ -367,43 +890,48 @@ class _AddressesPageState extends State<AddressesPage> {
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      onTap: (index) async {
-        switch (index) {
-          case 0:
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.home,
-              (route) => false,
-            );
-            break;
+      onTap: procesandoDireccion
+          ? null
+          : (index) async {
+              switch (index) {
+                case 0:
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.home,
+                    (route) => false,
+                  );
+                  break;
 
-          case 1:
-            await Navigator.pushNamed(context, AppRoutes.search);
+                case 1:
+                  await Navigator.pushNamed(context, AppRoutes.search);
 
-            if (mounted) {
-              setState(() {});
-            }
-            break;
+                  if (mounted) {
+                    setState(() {});
+                  }
 
-          case 2:
-            await _openCart();
-            break;
+                  break;
 
-          case 3:
-            if (!mounted) {
-              return;
-            }
+                case 2:
+                  await _openCart();
+                  break;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No tienes notificaciones nuevas.')),
-            );
-            break;
+                case 3:
+                  if (!mounted) {
+                    return;
+                  }
 
-          case 4:
-            Navigator.pop(context);
-            break;
-        }
-      },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No tienes notificaciones nuevas.'),
+                    ),
+                  );
+                  break;
+
+                case 4:
+                  Navigator.pop(context);
+                  break;
+              }
+            },
       items: [
         const BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
