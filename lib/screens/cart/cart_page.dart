@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_routes.dart';
 import '../../state/cart_state.dart';
 
 class CartPage extends StatefulWidget {
@@ -73,8 +74,8 @@ class _CartPageState extends State<CartPage> {
           child: isLoading
               ? _buildSkeleton()
               : CartState.items.isEmpty
-              ? _buildEmptyCart()
-              : _buildCart(),
+                  ? _buildEmptyCart()
+                  : _buildCart(),
         ),
       ),
     );
@@ -85,19 +86,29 @@ class _CartPageState extends State<CartPage> {
       height: 62,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE8E8E8))),
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xFFE8E8E8),
+          ),
+        ),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: _goBack,
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 20,
+            ),
           ),
           const Expanded(
             child: Text(
               'Carrito de compra',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(width: 48),
@@ -129,7 +140,10 @@ class _CartPageState extends State<CartPage> {
               const SizedBox(height: 16),
               const Text(
                 'Ofertas para ti',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 18),
               _skeletonProduct(),
@@ -202,36 +216,63 @@ class _CartPageState extends State<CartPage> {
         _buildHeader(),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              20,
+            ),
             children: [
               const Row(
                 children: [
                   SizedBox(
                     width: 100,
-                    child: Text('ARTÍCULOS', style: TextStyle(fontSize: 12)),
+                    child: Text(
+                      'ARTÍCULOS',
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                   Expanded(
-                    child: Text('DESCRIPCIÓN', style: TextStyle(fontSize: 12)),
+                    child: Text(
+                      'DESCRIPCIÓN',
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                  Text('PRECIO', style: TextStyle(fontSize: 12)),
+                  Text(
+                    'PRECIO',
+                    style: TextStyle(
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
+
               const SizedBox(height: 18),
 
               ...List.generate(
                 CartState.items.length,
                 (index) => Padding(
-                  padding: const EdgeInsets.only(bottom: 18),
+                  padding: const EdgeInsets.only(
+                    bottom: 18,
+                  ),
                   child: _buildCartItem(index),
                 ),
               ),
 
               const Divider(),
+
               const SizedBox(height: 16),
 
               const Text(
                 'Ofertas para ti',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 18),
@@ -268,11 +309,15 @@ class _CartPageState extends State<CartPage> {
                 children: [
                   Text(
                     'Subtotal ($cartQuantity)',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   Text(
                     'CLP ${_formatPrice(cartTotal)}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -283,10 +328,9 @@ class _CartPageState extends State<CartPage> {
                 height: 54,
                 child: ElevatedButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Pedido listo para continuar al pago'),
-                      ),
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.checkout,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -299,7 +343,10 @@ class _CartPageState extends State<CartPage> {
                   ),
                   child: const Text(
                     'Finalizar compra',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -313,23 +360,33 @@ class _CartPageState extends State<CartPage> {
   Widget _buildCartItem(int index) {
     final item = CartState.items[index];
 
-    final String name = item['name'] ?? 'Producto';
+    final String name =
+        item['name'] ?? 'Producto';
 
     final String image =
-        item['image'] ?? 'assets/images/churrasco_italiano.jpg';
+        item['image'] ??
+        'assets/images/churrasco_italiano.jpg';
 
-    final String description = item['description'] ?? '';
+    final String description =
+        item['description'] ?? '';
 
-    final int quantity = item['quantity'] ?? 1;
+    final int quantity =
+        item['quantity'] ?? 1;
 
-    final int total = item['total'] ?? 0;
+    final int total =
+        item['total'] ?? 0;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(9),
-          child: Image.asset(image, width: 82, height: 82, fit: BoxFit.cover),
+          child: Image.asset(
+            image,
+            width: 82,
+            height: 82,
+            fit: BoxFit.cover,
+          ),
         ),
 
         const SizedBox(width: 14),
@@ -340,7 +397,10 @@ class _CartPageState extends State<CartPage> {
             children: [
               const Text(
                 'Casa de la hamburguesa',
-                style: TextStyle(color: Colors.black45, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.black45,
+                  fontSize: 12,
+                ),
               ),
 
               const SizedBox(height: 4),
@@ -359,14 +419,22 @@ class _CartPageState extends State<CartPage> {
                 description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
               ),
 
               const SizedBox(height: 8),
 
               Row(
                 children: [
-                  const Text('Cantidad:', style: TextStyle(fontSize: 13)),
+                  const Text(
+                    'Cantidad:',
+                    style: TextStyle(
+                      fontSize: 13,
+                    ),
+                  ),
 
                   const SizedBox(width: 8),
 
@@ -382,7 +450,9 @@ class _CartPageState extends State<CartPage> {
                     alignment: Alignment.center,
                     child: Text(
                       '$quantity',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
 
@@ -402,7 +472,9 @@ class _CartPageState extends State<CartPage> {
 
         Text(
           '\$${_formatPrice(total)}',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -423,7 +495,10 @@ class _CartPageState extends State<CartPage> {
           color: Color(0xFFF2F2F2),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 16),
+        child: Icon(
+          icon,
+          size: 16,
+        ),
       ),
     );
   }
@@ -434,13 +509,19 @@ class _CartPageState extends State<CartPage> {
     required int price,
     required String image,
   }) {
-    final int quantity = CartState.offerQuantities[name] ?? 0;
+    final int quantity =
+        CartState.offerQuantities[name] ?? 0;
 
     return Row(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(image, width: 76, height: 76, fit: BoxFit.cover),
+          child: Image.asset(
+            image,
+            width: 76,
+            height: 76,
+            fit: BoxFit.cover,
+          ),
         ),
 
         const SizedBox(width: 14),
@@ -449,20 +530,33 @@ class _CartPageState extends State<CartPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
 
               const SizedBox(height: 4),
 
               Text(
                 description,
-                style: const TextStyle(color: Colors.black54, fontSize: 13),
+                style: const TextStyle(
+                  color: Colors.black54,
+                  fontSize: 13,
+                ),
               ),
 
               const SizedBox(height: 7),
 
               Row(
                 children: [
-                  const Text('Cantidad:', style: TextStyle(fontSize: 13)),
+                  const Text(
+                    'Cantidad:',
+                    style: TextStyle(
+                      fontSize: 13,
+                    ),
+                  ),
 
                   const SizedBox(width: 8),
 
@@ -478,7 +572,9 @@ class _CartPageState extends State<CartPage> {
                     alignment: Alignment.center,
                     child: Text(
                       '$quantity',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
 
@@ -496,7 +592,9 @@ class _CartPageState extends State<CartPage> {
 
         Text(
           '\$${_formatPrice(price)}',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -509,7 +607,9 @@ class _CartPageState extends State<CartPage> {
 
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -534,9 +634,13 @@ class _CartPageState extends State<CartPage> {
                 const SizedBox(height: 44),
 
                 const Text(
-                  'Cuando agregues artículos de un restaurante, tu carrito aparecerá aquí',
+                  'Cuando agregues artículos de un restaurante, '
+                  'tu carrito aparecerá aquí',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black45, height: 1.4),
+                  style: TextStyle(
+                    color: Colors.black45,
+                    height: 1.4,
+                  ),
                 ),
 
                 const SizedBox(height: 42),
