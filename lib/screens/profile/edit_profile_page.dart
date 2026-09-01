@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../state/cart_state.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -18,6 +19,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late final TextEditingController phoneController;
 
   bool initializedFromArguments = false;
+  bool guardandoCambios = false;
 
   @override
   void initState() {
@@ -60,9 +62,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
-  void _saveChanges() {
+  Future<void> _saveChanges() async {
+    FocusScope.of(context).unfocus();
+
     final name = nameController.text.trim();
-    final email = emailController.text.trim();
+    final email = emailController.text.trim().toLowerCase();
     final phone = phoneController.text.trim();
 
     if (name.isEmpty || email.isEmpty || phone.isEmpty) {
@@ -75,7 +79,94 @@ class _EditProfilePageState extends State<EditProfilePage> {
       return;
     }
 
-    Navigator.pop(context, {'name': name, 'email': email, 'phone': phone});
+    if (!email.contains('@') || !email.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa un correo electrónico válido.')),
+      );
+
+      return;
+    }
+
+    setState(() {
+      guardandoCambios = true;
+    });
+
+    try {
+      final response = await ApiService.updateMe(nombre: name, email: email);
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        final user = response['user'];
+
+        String updatedName = name;
+        String updatedEmail = email;
+
+        if (user is Map<String, dynamic>) {
+          updatedName = user['nombre'] ?? name;
+          updatedEmail = user['email'] ?? email;
+        }
+
+        Navigator.pop(context, {
+          'name': updatedName,
+          'email': updatedEmail,
+          'phone': phone,
+        });
+
+        return;
+      }
+
+      if (statusCode == 409) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response['message'] ??
+                  'Ya existe una cuenta asociada a este correo.',
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      if (statusCode == 401) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La sesión ha expirado. Inicia sesión nuevamente.'),
+          ),
+        );
+
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? 'No fue posible actualizar el perfil.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          guardandoCambios = false;
+        });
+      }
+    }
   }
 
   Future<void> _openCart() async {
@@ -85,6 +176,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           content: Text('Agrega un producto para comenzar un carrito.'),
         ),
       );
+
       return;
     }
 
@@ -140,9 +232,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
             color: Colors.black87,
             size: 20,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: guardandoCambios
+              ? null
+              : () {
+                  Navigator.pop(context);
+                },
         ),
         title: const Text(
           'Editar perfil',
@@ -167,13 +261,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
               const SizedBox(height: 8),
 
               TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Selección de fotografía simulada.'),
-                    ),
-                  );
-                },
+                onPressed: guardandoCambios
+                    ? null
+                    : () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Selección de fotografía simulada.'),
+                          ),
+                        );
+                      },
                 child: const Text(
                   'Cambiar foto',
                   style: TextStyle(
@@ -215,7 +311,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _saveChanges,
+                  onPressed: guardandoCambios ? null : _saveChanges,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryBlue,
                     foregroundColor: Colors.white,
@@ -224,10 +320,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Guardar cambios',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: guardandoCambios
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Guardar cambios',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -257,6 +365,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
+          enabled: !guardandoCambios,
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: Colors.black45),
             filled: true,
@@ -266,6 +375,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
               vertical: 16,
             ),
             enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE3E3E3)),
+            ),
+            disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFFE3E3E3)),
             ),
@@ -287,43 +400,48 @@ class _EditProfilePageState extends State<EditProfilePage> {
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      onTap: (index) async {
-        switch (index) {
-          case 0:
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.home,
-              (route) => false,
-            );
-            break;
+      onTap: guardandoCambios
+          ? null
+          : (index) async {
+              switch (index) {
+                case 0:
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.home,
+                    (route) => false,
+                  );
+                  break;
 
-          case 1:
-            await Navigator.pushNamed(context, AppRoutes.search);
+                case 1:
+                  await Navigator.pushNamed(context, AppRoutes.search);
 
-            if (mounted) {
-              setState(() {});
-            }
-            break;
+                  if (mounted) {
+                    setState(() {});
+                  }
 
-          case 2:
-            await _openCart();
-            break;
+                  break;
 
-          case 3:
-            if (!mounted) {
-              return;
-            }
+                case 2:
+                  await _openCart();
+                  break;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No tienes notificaciones nuevas.')),
-            );
-            break;
+                case 3:
+                  if (!mounted) {
+                    return;
+                  }
 
-          case 4:
-            Navigator.pop(context);
-            break;
-        }
-      },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No tienes notificaciones nuevas.'),
+                    ),
+                  );
+                  break;
+
+                case 4:
+                  Navigator.pop(context);
+                  break;
+              }
+            },
       items: [
         const BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
