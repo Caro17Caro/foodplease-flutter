@@ -15,7 +15,7 @@ class FoodPleaseApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF29ABE2))
             .copyWith(primary: const Color(0xFF29ABE2)),
       ),
-      initialRoute: AppRoutes.orders,
+      initialRoute: AppRoutes.login,
       routes: AppRoutes.routes,
     );
   }
