@@ -22,47 +22,96 @@ import '../screens/profile/profile_page.dart';
 import '../screens/profile/edit_profile_page.dart';
 import '../screens/profile/addresses_page.dart';
 
-class AppRoutes {
-  static const String login = '/';
-  static const String home = '/home';
+import '../screens/checkout/add_card_page.dart';
+import '../screens/checkout/address_search_page.dart';
+import '../screens/checkout/card_result_page.dart';
+import '../screens/checkout/checkout_page.dart';
+import '../screens/checkout/payment_method_page.dart';
+import '../screens/checkout/order_summary_page.dart';
+import '../screens/checkout/order_processing_page.dart';
 
-  // Autenticación
+import '../screens/order/order_tracking_page.dart';
+import '../screens/order/orders_page.dart';
+import '../screens/order/order_detail_page.dart';
+
+class AppRoutes {
+  // ============================================================
+  // AUTENTICACION
+  // ============================================================
+
+  static const String login = '/';
   static const String forgotPassword = '/forgot-password';
   static const String googleLogin = '/google-login';
   static const String register = '/register';
   static const String verifyEmail = '/verify-email';
 
-  // Home, ubicación y búsqueda
+  // ============================================================
+  // HOME, UBICACION Y BUSQUEDA
+  // ============================================================
+
+  static const String home = '/home';
   static const String location = '/location';
   static const String locationDenied = '/location-denied';
   static const String search = '/search';
   static const String searchResults = '/search-results';
   static const String noResults = '/no-results';
 
-  // Restaurante y productos
+  // ============================================================
+  // RESTAURANTE Y PRODUCTOS
+  // ============================================================
+
   static const String restaurant = '/restaurant';
   static const String productDetail = '/product-detail';
 
-  // Carrito
+  // ============================================================
+  // CARRITO
+  // ============================================================
+
   static const String cart = '/cart';
 
-  // Perfil
+  // ============================================================
+  // PERFIL
+  // ============================================================
+
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String addresses = '/addresses';
 
+  // ============================================================
+  // CHECKOUT
+  // ============================================================
+
+  static const String checkout = '/checkout';
+  static const String addressSearch = '/address-search';
+  static const String paymentMethod = '/payment-method';
+  static const String addCard = '/add-card';
+  static const String cardResult = '/card-result';
+  static const String orderSummary = '/order-summary';
+  static const String orderProcessing = '/order-processing';
+
+  // ============================================================
+  // PEDIDOS
+  // ============================================================
+
+  static const String orders = '/orders';
+  static const String orderDetail = '/order-detail';
+  static const String orderTracking = '/order-tracking';
+
+  // ============================================================
+  // RUTAS
+  // ============================================================
+
   static Map<String, WidgetBuilder> get routes {
     return {
+      // Autenticacion
       login: (context) => const LoginPage(),
-      home: (context) => const HomePage(),
-
-      // Autenticación
       forgotPassword: (context) => const ForgotPasswordPage(),
       googleLogin: (context) => const GoogleLoginPage(),
       register: (context) => const RegisterPage(),
       verifyEmail: (context) => const VerifyEmailPage(),
 
-      // Home, ubicación y búsqueda
+      // Home, ubicacion y busqueda
+      home: (context) => const HomePage(),
       location: (context) => const LocationPage(),
       locationDenied: (context) => const LocationDeniedPage(),
       search: (context) => const SearchPage(),
@@ -80,6 +129,20 @@ class AppRoutes {
       profile: (context) => const ProfilePage(),
       editProfile: (context) => const EditProfilePage(),
       addresses: (context) => const AddressesPage(),
+
+      // Checkout
+      checkout: (context) => const CheckoutPage(),
+      addressSearch: (context) => const AddressSearchPage(),
+      paymentMethod: (context) => const PaymentMethodPage(),
+      addCard: (context) => const AddCardPage(),
+      cardResult: (context) => const CardResultPage(),
+      orderSummary: (context) => const OrderSummaryPage(),
+      orderProcessing: (context) => const OrderProcessingPage(),
+
+      // Pedidos
+      orders: (context) => const OrdersPage(),
+      orderDetail: (context) => const OrderDetailPage(),
+      orderTracking: (context) => const OrderTrackingPage(),
     };
   }
 }
