@@ -141,7 +141,7 @@ class _HomePageState extends State<HomePage> {
           {
             'imagePath': 'assets/images/coca_cola.jpeg',
             'title': 'Coca-Cola',
-            'restaurant': 'FoodPlease',
+            'restaurant': 'FoodPlease Bebidas',
             'price': '\$1.990',
             'rating': '4.9',
             'reviews': '(2,100+)',
@@ -149,7 +149,7 @@ class _HomePageState extends State<HomePage> {
           {
             'imagePath': 'assets/images/fanta.jpeg',
             'title': 'Fanta',
-            'restaurant': 'FoodPlease',
+            'restaurant': 'FoodPlease Bebidas',
             'price': '\$1.990',
             'rating': '4.8',
             'reviews': '(1,400+)',
@@ -184,6 +184,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openRecommendedProduct(Map<String, String> product) async {
+    final restaurant = product['restaurant'] ?? 'FoodPlease';
+
     final result = await Navigator.pushNamed(
       context,
       AppRoutes.productDetail,
@@ -192,6 +194,7 @@ class _HomePageState extends State<HomePage> {
         'image': product['imagePath']!,
         'description': _getProductDescription(product['title']!),
         'price': _parsePrice(product['price']!),
+        'restaurant': restaurant,
       },
     );
 
@@ -202,7 +205,11 @@ class _HomePageState extends State<HomePage> {
     if (result is Map<String, dynamic>) {
       CartState.addProduct(result);
 
-      await Navigator.pushNamed(context, AppRoutes.restaurant);
+      await Navigator.pushNamed(
+        context,
+        AppRoutes.restaurant,
+        arguments: {'restaurant': restaurant},
+      );
 
       if (mounted) {
         setState(() {});
@@ -210,8 +217,23 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _openRestaurant() async {
-    await Navigator.pushNamed(context, AppRoutes.restaurant);
+  Future<void> _openRestaurant(String restaurant) async {
+    final normalizedRestaurant = restaurant.replaceAll('\n', ' ');
+
+    if (normalizedRestaurant == 'Empanadas Aldina') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Empanadas Aldina estará disponible próximamente.'),
+        ),
+      );
+      return;
+    }
+
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.restaurant,
+      arguments: {'restaurant': normalizedRestaurant},
+    );
 
     if (mounted) {
       setState(() {});
@@ -492,7 +514,7 @@ class _HomePageState extends State<HomePage> {
 
           return InkWell(
             borderRadius: BorderRadius.circular(40),
-            onTap: _openRestaurant,
+            onTap: () => _openRestaurant(restaurant['name']!),
             child: SizedBox(
               width: 80,
               child: Column(
