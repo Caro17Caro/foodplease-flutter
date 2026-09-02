@@ -111,7 +111,14 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
   }
 
-  Future<void> _openProduct(Map<String, dynamic> product) async {
+  Future<void> _openProduct(
+    Map<String, dynamic> product, {
+    required String restaurant,
+    required String category,
+  }) async {
+    final bool allowExtras =
+        category == 'Hamburguesas' || category == 'Completos';
+
     final result = await Navigator.pushNamed(
       context,
       AppRoutes.productDetail,
@@ -120,6 +127,8 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         'image': product['image'],
         'description': product['description'],
         'price': product['price'],
+        'restaurant': restaurant,
+        'allowExtras': allowExtras,
       },
     );
 
@@ -292,7 +301,11 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 restaurant: restaurant,
                 price: '\$${_formatPrice(product['price'])}',
                 onTap: () {
-                  _openProduct(product);
+                  _openProduct(
+                    product,
+                    restaurant: restaurant,
+                    category: category,
+                  );
                 },
               ),
             );

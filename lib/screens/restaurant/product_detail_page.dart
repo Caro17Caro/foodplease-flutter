@@ -35,20 +35,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     final String name = arguments?['name'] ?? 'Doble Carne';
+
     final String image =
         arguments?['image'] ?? 'assets/images/churrasco_italiano.jpg';
+
     final String description =
         arguments?['description'] ??
         'Hamburguesa doble carne, queso, tomate y salsa especial.';
+
     final int basePrice = arguments?['price'] ?? 8990;
 
-    final extrasPrice =
-        (extraCheese ? 1000 : 0) +
-        (extraBacon ? 1200 : 0) +
-        (extraSauce ? 500 : 0);
-
-    final total = (basePrice + extrasPrice) * quantity;
     final String restaurant = arguments?['restaurant'] ?? 'FoodPlease';
+
+    final bool allowExtras = arguments?['allowExtras'] ?? true;
+
+    final int extrasPrice = allowExtras
+        ? (extraCheese ? 1000 : 0) +
+              (extraBacon ? 1200 : 0) +
+              (extraSauce ? 500 : 0)
+        : 0;
+
+    final int total = (basePrice + extrasPrice) * quantity;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -63,6 +70,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 basePrice: basePrice,
                 extrasPrice: extrasPrice,
                 total: total,
+                allowExtras: allowExtras,
               ),
       ),
     );
@@ -119,6 +127,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     required int basePrice,
     required int extrasPrice,
     required int total,
+    required bool allowExtras,
   }) {
     return Column(
       children: [
@@ -189,57 +198,59 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 30),
+                    if (allowExtras) ...[
+                      const SizedBox(height: 30),
 
-                    const Text(
-                      'Agrega extras',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
+                      const Text(
+                        'Agrega extras',
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 4),
+                      const SizedBox(height: 4),
 
-                    const Text(
-                      'Personaliza tu pedido',
-                      style: TextStyle(color: Colors.black54),
-                    ),
+                      const Text(
+                        'Personaliza tu pedido',
+                        style: TextStyle(color: Colors.black54),
+                      ),
 
-                    const SizedBox(height: 14),
+                      const SizedBox(height: 14),
 
-                    _buildExtra(
-                      title: 'Queso extra',
-                      price: 1000,
-                      value: extraCheese,
-                      onChanged: (value) {
-                        setState(() {
-                          extraCheese = value ?? false;
-                        });
-                      },
-                    ),
+                      _buildExtra(
+                        title: 'Queso extra',
+                        price: 1000,
+                        value: extraCheese,
+                        onChanged: (value) {
+                          setState(() {
+                            extraCheese = value ?? false;
+                          });
+                        },
+                      ),
 
-                    _buildExtra(
-                      title: 'Tocino',
-                      price: 1200,
-                      value: extraBacon,
-                      onChanged: (value) {
-                        setState(() {
-                          extraBacon = value ?? false;
-                        });
-                      },
-                    ),
+                      _buildExtra(
+                        title: 'Tocino',
+                        price: 1200,
+                        value: extraBacon,
+                        onChanged: (value) {
+                          setState(() {
+                            extraBacon = value ?? false;
+                          });
+                        },
+                      ),
 
-                    _buildExtra(
-                      title: 'Salsa especial',
-                      price: 500,
-                      value: extraSauce,
-                      onChanged: (value) {
-                        setState(() {
-                          extraSauce = value ?? false;
-                        });
-                      },
-                    ),
+                      _buildExtra(
+                        title: 'Salsa especial',
+                        price: 500,
+                        value: extraSauce,
+                        onChanged: (value) {
+                          setState(() {
+                            extraSauce = value ?? false;
+                          });
+                        },
+                      ),
+                    ],
 
                     const SizedBox(height: 24),
 

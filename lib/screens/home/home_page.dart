@@ -184,7 +184,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openRecommendedProduct(Map<String, String> product) async {
-    final restaurant = product['restaurant'] ?? 'FoodPlease';
+    final String restaurant = product['restaurant'] ?? 'FoodPlease';
+
+    final bool allowExtras =
+        selectedCategory == 'Hamburguesas' || selectedCategory == 'Completos';
 
     final result = await Navigator.pushNamed(
       context,
@@ -195,6 +198,7 @@ class _HomePageState extends State<HomePage> {
         'description': _getProductDescription(product['title']!),
         'price': _parsePrice(product['price']!),
         'restaurant': restaurant,
+        'allowExtras': allowExtras,
       },
     );
 

@@ -304,6 +304,9 @@ class _RestaurantPageState extends State<RestaurantPage> {
     required String description,
     required int price,
   }) async {
+    final bool allowExtras =
+        selectedCategory != 'Bebidas' && selectedCategory != 'Pizzas';
+
     final result = await Navigator.pushNamed(
       context,
       AppRoutes.productDetail,
@@ -313,6 +316,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
         'description': description,
         'price': price,
         'restaurant': restaurantName,
+        'allowExtras': allowExtras,
       },
     );
 
