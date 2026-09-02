@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
 import '../../state/app_state.dart';
+import '../../state/cart_state.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -14,15 +16,20 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   static const Color primaryColor = Color(0xFF29ABE2);
 
+  static const int deliveryCost = 1000;
+  static const int serviceFee = 590;
+
   bool cargando = true;
+
+  int get cartQuantity => CartState.quantity;
+  int get cartSubtotal => CartState.total;
+  int get orderTotal => cartSubtotal + deliveryCost + serviceFee;
 
   final TextEditingController promoController = TextEditingController();
 
-  String direccionSeleccionada =
-      AppState.instance.direccionSeleccionada;
-  
-  String metodoPagoSeleccionado =
-      AppState.instance.metodoPagoSeleccionado;
+  String direccionSeleccionada = AppState.instance.direccionSeleccionada;
+
+  String metodoPagoSeleccionado = AppState.instance.metodoPagoSeleccionado;
 
   @override
   void initState() {
@@ -44,11 +51,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   void aplicarPromocion() {
@@ -57,15 +61,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final codigo = promoController.text.trim();
 
     if (codigo.isEmpty) {
-      mostrarMensaje(
-        'Ingresa un código de promoción.',
-      );
+      mostrarMensaje('Ingresa un código de promoción.');
       return;
     }
 
-    mostrarMensaje(
-      'Código "$codigo" aplicado en modo simulación.',
-    );
+    mostrarMensaje('Código "$codigo" aplicado en modo simulación.');
   }
 
   Future<void> abrirBuscadorDireccion() async {
@@ -85,6 +85,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       });
     }
   }
+
   Future<void> abrirMetodosPago() async {
     final resultado = await Navigator.pushNamed(
       context,
@@ -101,14 +102,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: cargando
-            ? _buildSkeletonCheckout()
-            : _buildCheckout(),
+        child: cargando ? _buildSkeletonCheckout() : _buildCheckout(),
       ),
     );
   }
@@ -149,30 +149,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 const SizedBox(height: 30),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: Column(
                     children: [
-                      _skeletonTotalRow(
-                        leftWidth: 82,
-                        rightWidth: 55,
-                      ),
+                      _skeletonTotalRow(leftWidth: 82, rightWidth: 55),
                       const SizedBox(height: 10),
-                      _skeletonTotalRow(
-                        leftWidth: 65,
-                        rightWidth: 45,
-                      ),
+                      _skeletonTotalRow(leftWidth: 65, rightWidth: 45),
                       const SizedBox(height: 10),
-                      _skeletonTotalRow(
-                        leftWidth: 105,
-                        rightWidth: 48,
-                      ),
+                      _skeletonTotalRow(leftWidth: 105, rightWidth: 48),
                       const SizedBox(height: 10),
-                      _skeletonTotalRow(
-                        leftWidth: 45,
-                        rightWidth: 60,
-                      ),
+                      _skeletonTotalRow(leftWidth: 45, rightWidth: 60),
                     ],
                   ),
                 ),
@@ -180,9 +166,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 const SizedBox(height: 30),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: _skeletonBox(
                     height: 48,
                     width: double.infinity,
@@ -201,16 +185,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Widget _skeletonOptionRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 15,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
       child: Row(
         children: [
-          _skeletonBox(
-            width: 48,
-            height: 10,
-          ),
+          _skeletonBox(width: 48, height: 10),
 
           const SizedBox(width: 28),
 
@@ -218,24 +196,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _skeletonBox(
-                  width: 155,
-                  height: 13,
-                ),
+                _skeletonBox(width: 155, height: 13),
                 const SizedBox(height: 6),
-                _skeletonBox(
-                  width: 65,
-                  height: 9,
-                ),
+                _skeletonBox(width: 65, height: 9),
               ],
             ),
           ),
 
-          const Icon(
-            Icons.chevron_right,
-            size: 20,
-            color: Color(0xFFD0D0D0),
-          ),
+          const Icon(Icons.chevron_right, size: 20, color: Color(0xFFD0D0D0)),
         ],
       ),
     );
@@ -243,25 +211,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Widget _skeletonPromo() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 15,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
       child: Row(
         children: [
-          _skeletonBox(
-            width: 72,
-            height: 10,
-          ),
+          _skeletonBox(width: 72, height: 10),
 
           const SizedBox(width: 20),
 
           Expanded(
-            child: _skeletonBox(
-              height: 34,
-              width: double.infinity,
-              radius: 7,
-            ),
+            child: _skeletonBox(height: 34, width: double.infinity, radius: 7),
           ),
         ],
       ),
@@ -270,17 +228,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Widget _skeletonProduct() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _skeletonBox(
-            width: 76,
-            height: 76,
-            radius: 7,
-          ),
+          _skeletonBox(width: 76, height: 76, radius: 7),
 
           const SizedBox(width: 16),
 
@@ -288,35 +240,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _skeletonBox(
-                  width: 145,
-                  height: 12,
-                ),
+                _skeletonBox(width: 145, height: 12),
                 const SizedBox(height: 8),
-                _skeletonBox(
-                  width: 105,
-                  height: 11,
-                ),
+                _skeletonBox(width: 105, height: 11),
                 const SizedBox(height: 7),
-                _skeletonBox(
-                  width: 125,
-                  height: 11,
-                ),
+                _skeletonBox(width: 125, height: 11),
                 const SizedBox(height: 7),
-                _skeletonBox(
-                  width: 70,
-                  height: 11,
-                ),
+                _skeletonBox(width: 70, height: 11),
               ],
             ),
           ),
 
           const SizedBox(width: 10),
 
-          _skeletonBox(
-            width: 48,
-            height: 12,
-          ),
+          _skeletonBox(width: 48, height: 12),
         ],
       ),
     );
@@ -329,14 +266,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _skeletonBox(
-          width: leftWidth,
-          height: 10,
-        ),
-        _skeletonBox(
-          width: rightWidth,
-          height: 10,
-        ),
+        _skeletonBox(width: leftWidth, height: 10),
+        _skeletonBox(width: rightWidth, height: 10),
       ],
     );
   }
@@ -402,19 +333,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 // ENTREGA
                 _checkoutOption(
                   title: 'ENTREGA',
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '\$1000',
-                        style: TextStyle(
+                        '\$${_formatPrice(deliveryCost)}',
+                        style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF303030),
                         ),
                       ),
-                      SizedBox(height: 2),
-                      Text(
+                      const SizedBox(height: 2),
+                      const Text(
                         '25–30 minutos',
                         style: TextStyle(
                           fontSize: 11,
@@ -424,9 +355,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ],
                   ),
                   onTap: () {
-                    mostrarMensaje(
-                      'Entrega estimada: 25–30 minutos.',
-                    );
+                    mostrarMensaje('Entrega estimada: 25–30 minutos.');
                   },
                 ),
 
@@ -443,9 +372,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       color: Color(0xFF303030),
                     ),
                   ),
-                  onTap: () {
-                    abrirMetodosPago();
-                  },
+                  onTap: abrirMetodosPago,
                 ),
 
                 _divider(),
@@ -482,29 +409,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             onSubmitted: (_) {
                               aplicarPromocion();
                             },
-                            style: const TextStyle(
-                              fontSize: 12,
-                            ),
+                            style: const TextStyle(fontSize: 12),
                             decoration: InputDecoration(
                               hintText: 'Aplicar código de promoción',
                               hintStyle: const TextStyle(
                                 fontSize: 11,
                                 color: Color(0xFFA5A5A5),
                               ),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(7),
+                                borderRadius: BorderRadius.circular(7),
                                 borderSide: const BorderSide(
                                   color: Color(0xFFBDBDBD),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(7),
+                                borderRadius: BorderRadius.circular(7),
                                 borderSide: const BorderSide(
                                   color: primaryColor,
                                 ),
@@ -523,19 +445,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           style: FilledButton.styleFrom(
                             backgroundColor: primaryColor,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 13,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 13),
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(7),
+                              borderRadius: BorderRadius.circular(7),
                             ),
                           ),
                           child: const Text(
                             'Aplicar',
-                            style: TextStyle(
-                              fontSize: 11,
-                            ),
+                            style: TextStyle(fontSize: 11),
                           ),
                         ),
                       ),
@@ -551,118 +468,85 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
                 const SizedBox(height: 11),
 
-                // PRODUCTO SIMULADO
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF2F2F2),
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                        child: const Icon(
-                          Icons.lunch_dining,
-                          size: 45,
-                          color: Color(0xFF8E8E8E),
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Casa de la hamburguesa',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF8A8A8A),
-                              ),
-                            ),
-
-                            SizedBox(height: 5),
-
-                            Text(
-                              'Doble carne',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF303030),
-                              ),
-                            ),
-
-                            SizedBox(height: 4),
-
-                            Text(
-                              'Adicional: mayo y poroto verde',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                color: Color(0xFF555555),
-                              ),
-                            ),
-
-                            SizedBox(height: 5),
-
-                            Text(
-                              'Cantidad: 1',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF303030),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      const Text(
-                        '\$12.990',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF303030),
-                        ),
-                      ),
-                    ],
+                // ====================================================
+                // PRODUCTOS REALES DEL CARRITO
+                // ====================================================
+                ...CartState.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(
+                      left: 18,
+                      right: 18,
+                      bottom: 16,
+                    ),
+                    child: _buildCheckoutProduct(
+                      restaurant: item['restaurant'] ?? 'FoodPlease',
+                      name: item['name'] ?? 'Producto',
+                      description: item['description'] ?? '',
+                      image: item['image'] ?? '',
+                      quantity: item['quantity'] ?? 1,
+                      total: item['total'] ?? 0,
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 75),
+                // ====================================================
+                // OFERTAS AGREGADAS AL CARRITO
+                // ====================================================
+                ...CartState.offerQuantities.entries
+                    .where((entry) => entry.value > 0)
+                    .map((entry) {
+                      final offer = _offerData(entry.key);
 
-                // TOTALES
-                const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 18,
-                  ),
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          left: 18,
+                          right: 18,
+                          bottom: 16,
+                        ),
+                        child: _buildCheckoutProduct(
+                          restaurant: 'FoodPlease',
+                          name: entry.key,
+                          description: offer['description'] as String,
+                          image: offer['image'] as String,
+                          quantity: entry.value,
+                          total: (offer['price'] as int) * entry.value,
+                        ),
+                      );
+                    }),
+
+                const SizedBox(height: 40),
+
+                // ====================================================
+                // TOTALES REALES
+                // ====================================================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: Column(
                     children: [
                       _TotalRow(
-                        title: 'Subtotal (1)',
-                        value: '\$12.990',
+                        title: 'Subtotal ($cartQuantity)',
+                        value: '\$${_formatPrice(cartSubtotal)}',
                       ),
-                      SizedBox(height: 9),
+
+                      const SizedBox(height: 9),
+
                       _TotalRow(
                         title: 'Total de envío',
-                        value: '\$1.000',
+                        value: '\$${_formatPrice(deliveryCost)}',
                       ),
-                      SizedBox(height: 9),
+
+                      const SizedBox(height: 9),
+
                       _TotalRow(
                         title: 'Tarifa por servicio',
-                        value: '\$590',
+                        value: '\$${_formatPrice(serviceFee)}',
                       ),
-                      SizedBox(height: 9),
+
+                      const SizedBox(height: 9),
+
                       _TotalRow(
                         title: 'Total',
-                        value: '\$14.580',
+                        value: '\$${_formatPrice(orderTotal)}',
                         bold: true,
                       ),
                     ],
@@ -672,26 +556,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 const SizedBox(height: 28),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: FilledButton(
                       onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.orderSummary,
-                        );
+                        Navigator.pushNamed(context, AppRoutes.orderSummary);
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(7),
+                          borderRadius: BorderRadius.circular(7),
                         ),
                       ),
                       child: const Text(
@@ -711,6 +589,147 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
         ),
       ],
+    );
+  }
+
+  // ============================================================
+  // PRODUCTO DEL CHECKOUT
+  // ============================================================
+
+  Widget _buildCheckoutProduct({
+    required String restaurant,
+    required String name,
+    required String description,
+    required String image,
+    required int quantity,
+    required int total,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(7),
+          child: image.isNotEmpty
+              ? Image.asset(
+                  image,
+                  width: 76,
+                  height: 76,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _productPlaceholder();
+                  },
+                )
+              : _productPlaceholder(),
+        ),
+
+        const SizedBox(width: 16),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                restaurant,
+                style: const TextStyle(fontSize: 10, color: Color(0xFF8A8A8A)),
+              ),
+
+              const SizedBox(height: 5),
+
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF303030),
+                ),
+              ),
+
+              if (description.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    color: Color(0xFF555555),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 5),
+
+              Text(
+                'Cantidad: $quantity',
+                style: const TextStyle(fontSize: 11, color: Color(0xFF303030)),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Text(
+          '\$${_formatPrice(total)}',
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF303030),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _productPlaceholder() {
+    return Container(
+      width: 76,
+      height: 76,
+      color: const Color(0xFFF2F2F2),
+      child: const Icon(Icons.lunch_dining, size: 40, color: Color(0xFF8E8E8E)),
+    );
+  }
+
+  // ============================================================
+  // DATOS DE OFERTAS
+  // ============================================================
+
+  Map<String, dynamic> _offerData(String name) {
+    switch (name) {
+      case 'Tiramisú':
+        return {
+          'description': 'Exquisito postre italiano',
+          'image': 'assets/images/pizza_burrata.jpeg',
+          'price': 6990,
+        };
+
+      case 'Coca-Cola':
+        return {
+          'description': 'Lata 350 ml',
+          'image': 'assets/images/coca_cola.jpeg',
+          'price': 1200,
+        };
+
+      case 'Sprite':
+        return {
+          'description': 'Lata 350 ml',
+          'image': 'assets/images/sprite-350-ml.png',
+          'price': 1200,
+        };
+
+      default:
+        return {'description': '', 'image': '', 'price': 0};
+    }
+  }
+
+  // ============================================================
+  // FORMATO DE PRECIOS
+  // ============================================================
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]}.',
     );
   }
 
@@ -761,10 +780,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 14,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         child: Row(
           children: [
             SizedBox(
@@ -779,17 +795,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
 
-            Expanded(
-              child: child,
-            ),
+            Expanded(child: child),
 
             const SizedBox(width: 8),
 
-            const Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: Color(0xFF9D9D9D),
-            ),
+            const Icon(Icons.chevron_right, size: 20, color: Color(0xFF9D9D9D)),
           ],
         ),
       ),
@@ -798,9 +808,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Widget _buildTableHeader() {
     return const Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 18,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 18),
       child: Row(
         children: [
           SizedBox(
@@ -840,11 +848,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _divider() {
-    return const Divider(
-      height: 1,
-      thickness: 1,
-      color: Color(0xFFEAEAEA),
-    );
+    return const Divider(height: 1, thickness: 1, color: Color(0xFFEAEAEA));
   }
 }
 
@@ -868,17 +872,16 @@ class _TotalRow extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: 12,
-            fontWeight:
-                bold ? FontWeight.w700 : FontWeight.w400,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
             color: const Color(0xFF303030),
           ),
         ),
+
         Text(
           value,
           style: TextStyle(
             fontSize: 12,
-            fontWeight:
-                bold ? FontWeight.w700 : FontWeight.w400,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
             color: const Color(0xFF303030),
           ),
         ),
