@@ -1,498 +1,438 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 
-class OrdersPage extends StatelessWidget {
+class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
 
+  @override
+  State<OrdersPage> createState() => _OrdersPageState();
+}
+
+class _OrdersPageState extends State<OrdersPage> {
   static const Color primaryColor = Color(0xFF29ABE2);
+
+  bool loading = true;
+  String? errorMessage;
+  List<Map<String, dynamic>> orders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    setState(() {
+      loading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final response = await ApiService.getOrders();
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode == 200) {
+        final dynamic currentOrders = response['current_orders'];
+        final dynamic previousOrders = response['previous_orders'];
+
+        final List<Map<String, dynamic>> loadedOrders = [];
+
+        if (currentOrders is List) {
+          for (final item in currentOrders) {
+            if (item is Map) {
+              loadedOrders.add(Map<String, dynamic>.from(item));
+            }
+          }
+        }
+
+        if (previousOrders is List) {
+          for (final item in previousOrders) {
+            if (item is Map) {
+              loadedOrders.add(Map<String, dynamic>.from(item));
+            }
+          }
+        }
+
+        setState(() {
+          orders = loadedOrders;
+          loading = false;
+        });
+
+        return;
+      }
+
+      setState(() {
+        loading = false;
+        errorMessage =
+            response['message'] ?? 'No fue posible cargar tus pedidos.';
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        loading = false;
+        errorMessage = 'No fue posible conectar con el servidor.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        foregroundColor: Colors.black87,
+        title: const Text(
+          'Mis pedidos',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  16,
-                  18,
-                  16,
-                  24,
-                ),
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.stretch,
-                  children: [
-                    // ==================================================
-                    // TÍTULO
-                    // ==================================================
+        child: RefreshIndicator(
+          color: primaryColor,
+          onRefresh: _loadOrders,
+          child: _buildContent(),
+        ),
+      ),
+    );
+  }
 
-                    const Text(
-                      'Mis pedidos',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF202020),
-                      ),
-                    ),
+  Widget _buildContent() {
+    if (loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: primaryColor),
+      );
+    }
 
-                    const SizedBox(height: 4),
-
-                    const Text(
-                      'Revisa tus pedidos actuales y anteriores',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF777777),
-                      ),
-                    ),
-
-                    const SizedBox(height: 34),
-
-                    // ==================================================
-                    // PEDIDO ACTUAL
-                    // ==================================================
-
-                    const Text(
-                      'Pedido actual',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF202020),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    _OrderCard(
-                      restaurant:
-                          'La Casa de la Hamburguesa',
-                      status: 'En camino',
-                      product:
-                          'Doble carne • 1 producto',
-                      total: '\$9.990.-',
-
-                      // TEMPORAL:
-                      // se reemplazará cuando tengamos
-                      // la imagen correcta de Doble carne.
-                      imagePath:
-                          'assets/images/barros_luco.jpeg',
-
-                      currentOrder: true,
-
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.orderTracking,
-                          arguments: 'online',
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 34),
-
-                    // ==================================================
-                    // PEDIDOS ANTERIORES
-                    // ==================================================
-
-                    const Text(
-                      'Pedidos anteriores',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF202020),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // ==================================================
-                    // PIZZERÍA NAPOLI
-                    // ==================================================
-
-                    _OrderCard(
-                      restaurant: 'Pizzería Napoli',
-                      status: 'Entregado',
-                      product:
-                          'Pizza Burrata - Pesto • 1 producto',
-                      total: '\$10.990.-',
-                      date: '12 ago 2026',
-                      imagePath:
-                          'assets/images/pizza_napolitana_pesto.jpeg',
-
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.orderDetail,
-                          arguments: {
-                            'orderNumber': 'FP-1523',
-                            'restaurant':
-                                'Pizzería Napoli',
-                            'product':
-                                'Pizza Burrata - Pesto',
-                            'image':
-                                'assets/images/pizza_napolitana_pesto.jpeg',
-                            'date':
-                                '12 ago 2026 • 20:15 hrs.',
-                            'address':
-                                'Pasaje Matucana 8853, La Reina',
-                            'payment':
-                                'Tarjeta terminada en •••••5623',
-
-                            // Total:
-                            // 9.400 + 1.000 + 590 = 10.990
-                            'subtotal': '\$9.400.-',
-                            'shipping': '\$1.000.-',
-                            'service': '\$590.-',
-                            'total': '\$10.990.-',
-                          },
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // ==================================================
-                    // BARROS LUCO
-                    // ==================================================
-
-                    _OrderCard(
-                      restaurant:
-                          'La Casa de la Hamburguesa',
-                      status: 'Entregado',
-                      product:
-                          'Barros Luco • 1 producto',
-                      total: '\$6.990.-',
-                      date: '15 jul 2026',
-                      imagePath:
-                          'assets/images/barros_luco.jpeg',
-
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.orderDetail,
-                          arguments: {
-                            'orderNumber': 'FP-1418',
-                            'restaurant':
-                                'La Casa de la Hamburguesa',
-                            'product': 'Barros Luco',
-                            'image':
-                                'assets/images/barros_luco.jpeg',
-                            'date':
-                                '15 jul 2026 • 13:40 hrs.',
-                            'address':
-                                'Pasaje Matucana 8853, La Reina',
-                            'payment':
-                                'Tarjeta terminada en •••••5623',
-
-                            // Total:
-                            // 5.400 + 1.000 + 590 = 6.990
-                            'subtotal': '\$5.400.-',
-                            'shipping': '\$1.000.-',
-                            'service': '\$590.-',
-                            'total': '\$6.990.-',
-                          },
-                        );
-                      },
-                    ),
-                  ],
+    if (errorMessage != null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        children: [
+          const SizedBox(height: 110),
+          const Icon(Icons.cloud_off_outlined, size: 64, color: Colors.black38),
+          const SizedBox(height: 18),
+          Text(
+            errorMessage!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 15, color: Colors.black54),
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: TextButton(
+              onPressed: _loadOrders,
+              child: const Text(
+                'Intentar nuevamente',
+                style: TextStyle(
+                  color: primaryColor,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
+          ),
+        ],
+      );
+    }
 
-            // ==================================================
-            // BARRA INFERIOR
-            // ==================================================
+    if (orders.isEmpty) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        children: const [
+          SizedBox(height: 110),
+          Icon(Icons.receipt_long_outlined, size: 70, color: Colors.black26),
+          SizedBox(height: 20),
+          Text(
+            'Aún no tienes pedidos',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF202020),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Cuando realices un pedido podrás revisarlo aquí.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+        ],
+      );
+    }
 
-            _bottomNavigation(context),
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
+      children: [
+        const Text(
+          'Revisa tus pedidos actuales y anteriores',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15, color: Color(0xFF777777)),
+        ),
+
+        const SizedBox(height: 28),
+
+        ...orders.map(
+          (order) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildOrderCard(order),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrderCard(Map<String, dynamic> order) {
+    final String restaurant =
+        order['restaurante']?.toString().trim().isNotEmpty == true
+        ? order['restaurante'].toString()
+        : 'FoodPlease';
+
+    final String product =
+        order['producto']?.toString().trim().isNotEmpty == true
+        ? order['producto'].toString()
+        : 'Pedido FoodPlease';
+
+    final String status = _formatStatus(
+      order['estado']?.toString() ?? 'confirmado',
+    );
+
+    final int quantity = _toInt(order['cantidad'], fallback: 1);
+
+    final int total = _toInt(order['total']);
+
+    final String orderNumber =
+        order['numero_pedido']?.toString().trim().isNotEmpty == true
+        ? order['numero_pedido'].toString()
+        : 'Pedido';
+
+    final String date = _formatDate(order['fecha']?.toString());
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _openOrder(order),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F7F7),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE4E4E4)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAEAEA),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.fastfood_outlined,
+                size: 34,
+                color: Colors.black45,
+              ),
+            ),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          restaurant,
+                          style: const TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF202020),
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 22,
+                        color: Colors.black38,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    orderNumber,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    status,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 7),
+
+                  Text(
+                    '$product • $quantity ${quantity == 1 ? 'producto' : 'productos'}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+
+                  const SizedBox(height: 7),
+
+                  Text(
+                    'Total: ${_formatPrice(total)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+
+                  if (date.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Colors.black45,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ============================================================
-  // BARRA DE NAVEGACIÓN INFERIOR
-  // ============================================================
-
-  Widget _bottomNavigation(
-    BuildContext context,
-  ) {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFEAEAEA),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment:
-            MainAxisAlignment.spaceAround,
-        children: [
-          _navButton(
-            icon: Icons.home,
-            onTap: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.home,
-                (route) => false,
-              );
-            },
-          ),
-
-          _navButton(
-            icon: Icons.explore_outlined,
-            onTap: () {
-              _mostrarMensaje(
-                context,
-                'Explorar se conectará con el módulo Home.',
-              );
-            },
-          ),
-
-          _navButton(
-            icon: Icons.shopping_cart_outlined,
-            onTap: () {
-              _mostrarMensaje(
-                context,
-                'Carrito disponible al integrar el módulo correspondiente.',
-              );
-            },
-          ),
-
-          _navButton(
-            icon: Icons.notifications_none,
-            onTap: () {
-              _mostrarMensaje(
-                context,
-                'No tienes notificaciones nuevas.',
-              );
-            },
-          ),
-
-          _navButton(
-            icon: Icons.person_outline,
-            selected: true,
-            onTap: () {
-              _mostrarMensaje(
-                context,
-                'Perfil se conectará con el módulo correspondiente.',
-              );
-            },
-          ),
-        ],
-      ),
+  void _openOrder(Map<String, dynamic> order) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.orderDetail,
+      arguments: {
+        'orderNumber':
+            order['numero_pedido']?.toString() ?? 'Pedido FoodPlease',
+        'status': order['estado']?.toString() ?? 'confirmado',
+        'restaurant': order['restaurante']?.toString() ?? 'FoodPlease',
+        'product': order['producto']?.toString() ?? 'Pedido FoodPlease',
+        'image': order['imagen']?.toString() ?? '',
+        'date': _formatDate(order['fecha']?.toString()),
+        'address': order['direccion']?.toString() ?? 'Dirección no disponible',
+        'payment': order['metodo_pago']?.toString() ?? 'Método no disponible',
+        'subtotal': _formatPrice(_toInt(order['subtotal'])),
+        'shipping': _formatPrice(_toInt(order['envio'])),
+        'service': _formatPrice(_toInt(order['tarifa_servicio'])),
+        'total': _formatPrice(_toInt(order['total'])),
+      },
     );
   }
 
-  Widget _navButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    bool selected = false,
-  }) {
-    return IconButton(
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        size: 27,
-        color: selected
-            ? primaryColor
-            : const Color(0xFF666666),
-      ),
-    );
+  int _toInt(dynamic value, {int fallback = 0}) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is double) {
+      return value.round();
+    }
+
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
   }
 
-  void _mostrarMensaje(
-    BuildContext context,
-    String mensaje,
-  ) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-      ),
-    );
+  String _formatPrice(int value) {
+    final String digits = value.toString();
+    final StringBuffer buffer = StringBuffer();
+
+    for (int i = 0; i < digits.length; i++) {
+      final int positionFromRight = digits.length - i;
+
+      buffer.write(digits[i]);
+
+      if (positionFromRight > 1 && positionFromRight % 3 == 1) {
+        buffer.write('.');
+      }
+    }
+
+    return '\$$buffer';
   }
-}
 
-// ============================================================
-// TARJETA DE PEDIDO
-// ============================================================
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'confirmado':
+        return 'Pedido confirmado';
+      case 'preparando':
+      case 'en preparación':
+      case 'en preparacion':
+        return 'En preparación';
+      case 'en_camino':
+      case 'en camino':
+        return 'En camino';
+      case 'entregado':
+        return 'Entregado';
+      case 'cancelado':
+        return 'Cancelado';
+      default:
+        if (status.isEmpty) {
+          return 'Pedido confirmado';
+        }
 
-class _OrderCard extends StatelessWidget {
-  final String restaurant;
-  final String status;
-  final String product;
-  final String total;
-  final String? date;
-  final String imagePath;
-  final bool currentOrder;
-  final VoidCallback onTap;
+        return '${status[0].toUpperCase()}${status.substring(1)}';
+    }
+  }
 
-  const _OrderCard({
-    required this.restaurant,
-    required this.status,
-    required this.product,
-    required this.total,
-    required this.imagePath,
-    required this.onTap,
-    this.date,
-    this.currentOrder = false,
-  });
+  String _formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.trim().isEmpty) {
+      return '';
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        8,
-        8,
-        10,
-        8,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius:
-            BorderRadius.circular(11),
-        border: Border.all(
-          color: const Color(0xFFE2E2E2),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Text(
-                  restaurant,
-                  style: const TextStyle(
-                    fontSize: 15.5,
-                    fontWeight:
-                        FontWeight.w700,
-                    color:
-                        Color(0xFF202020),
-                  ),
-                ),
+    final DateTime? date = DateTime.tryParse(rawDate);
 
-                const SizedBox(height: 5),
+    if (date == null) {
+      return rawDate;
+    }
 
-                Text(
-                  status,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: currentOrder
-                        ? const Color(
-                            0xFF29ABE2,
-                          )
-                        : const Color(
-                            0xFF777777,
-                          ),
-                  ),
-                ),
+    const months = [
+      'ene',
+      'feb',
+      'mar',
+      'abr',
+      'may',
+      'jun',
+      'jul',
+      'ago',
+      'sept',
+      'oct',
+      'nov',
+      'dic',
+    ];
 
-                const SizedBox(height: 7),
+    final String day = date.day.toString().padLeft(2, '0');
+    final String month = months[date.month - 1];
+    final String hour = date.hour.toString().padLeft(2, '0');
+    final String minute = date.minute.toString().padLeft(2, '0');
 
-                Text(
-                  product,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color:
-                        Color(0xFF777777),
-                  ),
-                ),
-
-                const SizedBox(height: 7),
-
-                Text(
-                  'Total: $total',
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color:
-                        Color(0xFF777777),
-                  ),
-                ),
-
-                if (date != null) ...[
-                  const SizedBox(height: 7),
-
-                  Text(
-                    date!,
-                    style:
-                        const TextStyle(
-                      fontSize: 11.5,
-                      color:
-                          Color(
-                        0xFF777777,
-                      ),
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 7),
-
-                GestureDetector(
-                  onTap: onTap,
-                  child: Text(
-                    currentOrder
-                        ? 'Ver seguimiento >'
-                        : 'Ver detalle >',
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      color:
-                          Color(0xFF29ABE2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // ====================================================
-          // IMAGEN
-          // ====================================================
-
-          ClipRRect(
-            borderRadius:
-                BorderRadius.circular(8),
-            child: Image.asset(
-              imagePath,
-              width: 82,
-              height: 82,
-              fit: BoxFit.cover,
-              errorBuilder: (
-                context,
-                error,
-                stackTrace,
-              ) {
-                return Container(
-                  width: 82,
-                  height: 82,
-                  color: const Color(
-                    0xFFE6E6E6,
-                  ),
-                  child: const Icon(
-                    Icons.fastfood_outlined,
-                    size: 40,
-                    color:
-                        Color(0xFF888888),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+    return '$day $month ${date.year} • $hour:$minute hrs.';
   }
 }

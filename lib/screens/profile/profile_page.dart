@@ -112,13 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: Icons.receipt_long_outlined,
               title: 'Mis pedidos',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Mis pedidos estará disponible al integrar el módulo de pedidos.',
-                    ),
-                  ),
-                );
+                Navigator.pushNamed(context, AppRoutes.orders);
               },
             ),
 

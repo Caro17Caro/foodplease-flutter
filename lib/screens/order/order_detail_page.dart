@@ -3,57 +3,43 @@ import 'package:flutter/material.dart';
 class OrderDetailPage extends StatelessWidget {
   const OrderDetailPage({super.key});
 
-  static const Color primaryColor =
-      Color(0xFF29ABE2);
+  static const Color primaryColor = Color(0xFF29ABE2);
 
   @override
   Widget build(BuildContext context) {
-    final Object? arguments =
-        ModalRoute.of(context)?.settings.arguments;
+    final Object? arguments = ModalRoute.of(context)?.settings.arguments;
 
-    final Map<String, dynamic> order =
-        arguments is Map<String, dynamic>
-            ? arguments
-            : <String, dynamic>{};
+    final Map<String, dynamic> order = arguments is Map<String, dynamic>
+        ? arguments
+        : <String, dynamic>{};
 
-    final String orderNumber =
-        order['orderNumber'] ?? 'FP-1523';
+    final String orderNumber = order['orderNumber'] ?? 'Pedido FoodPlease';
 
-    final String restaurant =
-        order['restaurant'] ??
-            'Pizzería Napoli';
+    final String status = order['status'] ?? 'confirmado';
 
-    final String product =
-        order['product'] ??
-            'Pizza Burrata - Pesto';
+    final String restaurant = order['restaurant'] ?? 'FoodPlease';
 
-    final String imagePath =
-        order['image'] ??
-            'assets/images/pizza_napolitana_pesto.jpeg';
+    final String product = order['product'] ?? 'Pedido FoodPlease';
 
-    final String date =
-        order['date'] ??
-            '12 ago 2026 • 20:15 hrs.';
+    final String imagePath = order['image'] ?? '';
 
-    final String address =
-        order['address'] ??
-            'Pasaje Matucana 8853, La Reina';
+    final String date = order['date'] ?? '';
 
-    final String payment =
-        order['payment'] ??
-            'Tarjeta terminada en •••••5623';
+    final String address = order['address'] ?? 'Dirección no disponible';
 
-    final String subtotal =
-        order['subtotal'] ?? '\$9.400.-';
+    final String payment = order['payment'] ?? 'Método no disponible';
 
-    final String shipping =
-        order['shipping'] ?? '\$1.000.-';
+    final String subtotal = order['subtotal'] ?? '\$0';
 
-    final String service =
-        order['service'] ?? '\$590.-';
+    final String shipping = order['shipping'] ?? '\$0';
 
-    final String total =
-        order['total'] ?? '\$10.990.-';
+    final String service = order['service'] ?? '\$0';
+
+    final String total = order['total'] ?? '\$0';
+
+    final String formattedStatus = _formatStatus(status);
+
+    final Color statusColor = _statusColor(status);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -62,86 +48,61 @@ class OrderDetailPage extends StatelessWidget {
           children: [
             _buildHeader(context),
 
-            const Divider(
-              height: 1,
-              color: Color(0xFFEAEAEA),
-            ),
+            const Divider(height: 1, color: Color(0xFFEAEAEA)),
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  22,
-                  12,
-                  22,
-                  25,
-                ),
+                padding: const EdgeInsets.fromLTRB(22, 12, 22, 25),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ==================================================
-                    // PEDIDO
-                    // ==================================================
-
                     Text(
                       'Pedido #$orderNumber',
                       style: const TextStyle(
                         fontSize: 16,
-                        fontWeight:
-                            FontWeight.w700,
-                        color:
-                            Color(0xFF202020),
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF202020),
                       ),
                     ),
 
                     const SizedBox(height: 5),
 
-                    const Row(
+                    Row(
                       children: [
-                        CircleAvatar(
-                          radius: 4,
-                          backgroundColor:
-                              Color(0xFF2ECC40),
-                        ),
+                        CircleAvatar(radius: 4, backgroundColor: statusColor),
 
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
 
                         Text(
-                          'Entregado',
-                          style: TextStyle(
+                          formattedStatus,
+                          style: const TextStyle(
                             fontSize: 11,
-                            color:
-                                Color(0xFF777777),
+                            color: Color(0xFF777777),
                           ),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 7),
+                    if (date.isNotEmpty) ...[
+                      const SizedBox(height: 7),
 
-                    Text(
-                      date,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color:
-                            Color(0xFF777777),
+                      Text(
+                        date,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF777777),
+                        ),
                       ),
-                    ),
+                    ],
 
                     const SizedBox(height: 8),
-
-                    // ==================================================
-                    // DIRECCIÓN
-                    // ==================================================
 
                     const Text(
                       'Dirección de entrega',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight:
-                            FontWeight.w700,
-                        color:
-                            Color(0xFF202020),
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF202020),
                       ),
                     ),
 
@@ -150,11 +111,9 @@ class OrderDetailPage extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(
-                          Icons
-                              .location_on_outlined,
+                          Icons.location_on_outlined,
                           size: 25,
-                          color:
-                              Color(0xFF303030),
+                          color: Color(0xFF303030),
                         ),
 
                         const SizedBox(width: 8),
@@ -162,16 +121,10 @@ class OrderDetailPage extends StatelessWidget {
                         Expanded(
                           child: Text(
                             address,
-                            style:
-                                const TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
-                              fontWeight:
-                                  FontWeight
-                                      .w600,
-                              color:
-                                  Color(
-                                0xFF202020,
-                              ),
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF202020),
                             ),
                           ),
                         ),
@@ -180,118 +133,68 @@ class OrderDetailPage extends StatelessWidget {
 
                     const SizedBox(height: 28),
 
-                    // ==================================================
-                    // TU PEDIDO
-                    // ==================================================
-
                     const Text(
                       'Tu pedido',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight:
-                            FontWeight.w700,
-                        color:
-                            Color(0xFF202020),
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF202020),
                       ),
                     ),
 
                     const SizedBox(height: 20),
 
                     Row(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(
-                            8,
-                          ),
-                          child: Image.asset(
-                            imagePath,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (
-                              context,
-                              error,
-                              stackTrace,
-                            ) {
-                              return Container(
-                                width: 80,
-                                height: 80,
-                                color:
-                                    const Color(
-                                  0xFFE8E8E8,
-                                ),
-                                child: const Icon(
-                                  Icons
-                                      .fastfood_outlined,
-                                  size: 45,
-                                  color:
-                                      Color(
-                                    0xFF888888,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          child: imagePath.isNotEmpty
+                              ? Image.asset(
+                                  imagePath,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return _buildImageFallback();
+                                  },
+                                )
+                              : _buildImageFallback(),
                         ),
 
                         const SizedBox(width: 28),
 
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 product,
-                                style:
-                                    const TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
-                                  fontWeight:
-                                      FontWeight
-                                          .w500,
-                                  color:
-                                      Color(
-                                    0xFF202020,
-                                  ),
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF202020),
                                 ),
                               ),
 
-                              const SizedBox(
-                                height: 2,
-                              ),
+                              const SizedBox(height: 2),
 
                               Text(
                                 restaurant,
-                                style:
-                                    const TextStyle(
+                                style: const TextStyle(
                                   fontSize: 11,
-                                  color:
-                                      Color(
-                                    0xFF888888,
-                                  ),
+                                  color: Color(0xFF888888),
                                 ),
                               ),
 
-                              const SizedBox(
-                                height: 4,
-                              ),
+                              const SizedBox(height: 4),
 
                               Text(
                                 '1 x $subtotal',
-                                style:
-                                    const TextStyle(
+                                style: const TextStyle(
                                   fontSize: 15,
-                                  fontWeight:
-                                      FontWeight
-                                          .w600,
-                                  color:
-                                      Color(
-                                    0xFF202020,
-                                  ),
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF202020),
                                 ),
                               ),
                             ],
@@ -302,18 +205,12 @@ class OrderDetailPage extends StatelessWidget {
 
                     const SizedBox(height: 28),
 
-                    // ==================================================
-                    // MÉTODO DE PAGO
-                    // ==================================================
-
                     const Text(
                       'Método de pago',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight:
-                            FontWeight.w700,
-                        color:
-                            Color(0xFF202020),
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF202020),
                       ),
                     ),
 
@@ -324,8 +221,7 @@ class OrderDetailPage extends StatelessWidget {
                         const Icon(
                           Icons.credit_card,
                           size: 34,
-                          color:
-                              Color(0xFF173B44),
+                          color: Color(0xFF173B44),
                         ),
 
                         const SizedBox(width: 10),
@@ -333,13 +229,9 @@ class OrderDetailPage extends StatelessWidget {
                         Expanded(
                           child: Text(
                             payment,
-                            style:
-                                const TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
-                              color:
-                                  Color(
-                                0xFF202020,
-                              ),
+                              color: Color(0xFF202020),
                             ),
                           ),
                         ),
@@ -348,49 +240,33 @@ class OrderDetailPage extends StatelessWidget {
 
                     const SizedBox(height: 36),
 
-                    // ==================================================
-                    // RESUMEN
-                    // ==================================================
-
                     const Text(
                       'Resumen',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight:
-                            FontWeight.w700,
-                        color:
-                            Color(0xFF202020),
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF202020),
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
-                    _DetailTotalRow(
-                      label: 'Subtotal',
-                      value: subtotal,
-                    ),
+                    _DetailTotalRow(label: 'Subtotal', value: subtotal),
+
+                    const SizedBox(height: 12),
+
+                    _DetailTotalRow(label: 'Envío', value: shipping),
 
                     const SizedBox(height: 12),
 
                     _DetailTotalRow(
-                      label: 'Envío',
-                      value: shipping,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _DetailTotalRow(
-                      label:
-                          'Tarifa por servicio',
+                      label: 'Tarifa por servicio',
                       value: service,
                     ),
 
                     const SizedBox(height: 12),
 
-                    _DetailTotalRow(
-                      label: 'Total',
-                      value: total,
-                    ),
+                    _DetailTotalRow(label: 'Total', value: total),
                   ],
                 ),
               ),
@@ -403,13 +279,62 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // HEADER
-  // ============================================================
+  Widget _buildImageFallback() {
+    return Container(
+      width: 80,
+      height: 80,
+      color: const Color(0xFFE8E8E8),
+      child: const Icon(
+        Icons.fastfood_outlined,
+        size: 45,
+        color: Color(0xFF888888),
+      ),
+    );
+  }
 
-  Widget _buildHeader(
-    BuildContext context,
-  ) {
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'confirmado':
+        return 'Pedido confirmado';
+
+      case 'preparando':
+      case 'en preparación':
+      case 'en preparacion':
+        return 'En preparación';
+
+      case 'en_camino':
+      case 'en camino':
+        return 'En camino';
+
+      case 'entregado':
+        return 'Entregado';
+
+      case 'cancelado':
+        return 'Cancelado';
+
+      default:
+        if (status.isEmpty) {
+          return 'Pedido confirmado';
+        }
+
+        return '${status[0].toUpperCase()}${status.substring(1)}';
+    }
+  }
+
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'entregado':
+        return const Color(0xFF2ECC40);
+
+      case 'cancelado':
+        return Colors.red;
+
+      default:
+        return primaryColor;
+    }
+  }
+
+  Widget _buildHeader(BuildContext context) {
     return SizedBox(
       height: 57,
       child: Row(
@@ -421,11 +346,9 @@ class OrderDetailPage extends StatelessWidget {
                 Navigator.pop(context);
               },
               icon: const Icon(
-                Icons
-                    .arrow_back_ios_new_rounded,
+                Icons.arrow_back_ios_new_rounded,
                 size: 20,
-                color:
-                    Color(0xFF202020),
+                color: Color(0xFF202020),
               ),
             ),
           ),
@@ -433,14 +356,11 @@ class OrderDetailPage extends StatelessWidget {
           const Expanded(
             child: Text(
               'Detalle del pedido',
-              textAlign:
-                  TextAlign.center,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight:
-                    FontWeight.w700,
-                color:
-                    Color(0xFF202020),
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF202020),
               ),
             ),
           ),
@@ -451,94 +371,48 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // BARRA INFERIOR
-  // ============================================================
-
   Widget _bottomNavigation() {
     return Container(
       height: 72,
-      decoration:
-          const BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color:
-                Color(0xFFEAEAEA),
-          ),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFEAEAEA))),
       ),
       child: const Row(
-        mainAxisAlignment:
-            MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Icon(
-            Icons.home,
-            size: 27,
-            color:
-                Color(0xFF666666),
-          ),
+          Icon(Icons.home, size: 27, color: Color(0xFF666666)),
 
-          Icon(
-            Icons.explore_outlined,
-            size: 27,
-            color:
-                Color(0xFF666666),
-          ),
+          Icon(Icons.explore_outlined, size: 27, color: Color(0xFF666666)),
 
           Icon(
             Icons.shopping_cart_outlined,
             size: 27,
-            color:
-                Color(0xFF666666),
+            color: Color(0xFF666666),
           ),
 
-          Icon(
-            Icons.notifications_none,
-            size: 27,
-            color:
-                Color(0xFF666666),
-          ),
+          Icon(Icons.notifications_none, size: 27, color: Color(0xFF666666)),
 
-          Icon(
-            Icons.person_outline,
-            size: 27,
-            color: primaryColor,
-          ),
+          Icon(Icons.person_outline, size: 27, color: primaryColor),
         ],
       ),
     );
   }
 }
 
-// ============================================================
-// RESUMEN DEL PEDIDO
-// ============================================================
-
-class _DetailTotalRow
-    extends StatelessWidget {
+class _DetailTotalRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DetailTotalRow({
-    required this.label,
-    required this.value,
-  });
+  const _DetailTotalRow({required this.label, required this.value});
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Text(
           label,
-          style:
-              const TextStyle(
-            fontSize: 14,
-            color:
-                Color(0xFF202020),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF202020)),
         ),
 
         const SizedBox(width: 4),
@@ -547,25 +421,14 @@ class _DetailTotalRow
           child: Text(
             '.' * 45,
             maxLines: 1,
-            overflow:
-                TextOverflow.clip,
-            style:
-                const TextStyle(
-              fontSize: 12,
-              color:
-                  Color(0xFF777777),
-            ),
+            overflow: TextOverflow.clip,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF777777)),
           ),
         ),
 
         Text(
           value,
-          style:
-              const TextStyle(
-            fontSize: 14,
-            color:
-                Color(0xFF202020),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF202020)),
         ),
       ],
     );
