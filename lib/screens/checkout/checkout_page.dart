@@ -354,6 +354,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ),
                     ],
                   ),
+                  showArrow: false,
                   onTap: () {
                     mostrarMensaje('Entrega estimada: 25–30 minutos.');
                   },
@@ -776,6 +777,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     required String title,
     required Widget child,
     required VoidCallback onTap,
+    bool showArrow = true,
   }) {
     return InkWell(
       onTap: onTap,
@@ -797,9 +799,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
             Expanded(child: child),
 
-            const SizedBox(width: 8),
+            if (showArrow) ...[
+              const SizedBox(width: 8),
 
-            const Icon(Icons.chevron_right, size: 20, color: Color(0xFF9D9D9D)),
+              const Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Color(0xFF9D9D9D),
+              ),
+            ],
           ],
         ),
       ),
