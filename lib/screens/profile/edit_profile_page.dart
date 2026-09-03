@@ -258,28 +258,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: Icon(Icons.person, size: 58, color: Colors.black45),
               ),
 
-              const SizedBox(height: 8),
-
-              TextButton(
-                onPressed: guardandoCambios
-                    ? null
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Selección de fotografía simulada.'),
-                          ),
-                        );
-                      },
-                child: const Text(
-                  'Cambiar foto',
-                  style: TextStyle(
-                    color: primaryBlue,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               _buildField(
                 label: 'Nombre completo',
