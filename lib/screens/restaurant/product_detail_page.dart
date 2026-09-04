@@ -76,6 +76,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  List<String> _getSelectedExtras() {
+    final List<String> extras = [];
+
+    if (extraCheese) {
+      extras.add('Queso extra');
+    }
+
+    if (extraBacon) {
+      extras.add('Tocino');
+    }
+
+    if (extraSauce) {
+      extras.add('Salsa especial');
+    }
+
+    return extras;
+  }
+
   Widget _buildSkeleton() {
     return ListView(
       padding: EdgeInsets.zero,
@@ -87,19 +105,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _skeletonBox(width: 220, height: 26),
+
               const SizedBox(height: 14),
+
               _skeletonBox(width: 110, height: 20),
+
               const SizedBox(height: 24),
+
               _skeletonBox(width: double.infinity, height: 16),
+
               const SizedBox(height: 8),
+
               _skeletonBox(width: 280, height: 16),
+
               const SizedBox(height: 32),
+
               _skeletonBox(width: 180, height: 22),
+
               const SizedBox(height: 18),
+
               _skeletonBox(width: double.infinity, height: 55),
+
               const SizedBox(height: 12),
+
               _skeletonBox(width: double.infinity, height: 55),
+
               const SizedBox(height: 12),
+
               _skeletonBox(width: double.infinity, height: 55),
             ],
           ),
@@ -276,6 +308,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 }
                               : null,
                         ),
+
                         SizedBox(
                           width: 55,
                           child: Text(
@@ -287,6 +320,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                           ),
                         ),
+
                         _quantityButton(
                           icon: Icons.add,
                           onPressed: () {
@@ -315,6 +349,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
+                  final List<String> selectedExtras = _getSelectedExtras();
+
                   Navigator.pop(context, {
                     'name': name,
                     'image': image,
@@ -323,6 +359,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     'unitPrice': basePrice + extrasPrice,
                     'quantity': quantity,
                     'total': total,
+                    'extras': selectedExtras,
+                    'isBaseProduct': selectedExtras.isEmpty,
                   });
                 },
                 style: ElevatedButton.styleFrom(
@@ -343,6 +381,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     Text(
                       '\$${_formatPrice(total)}',
                       style: const TextStyle(

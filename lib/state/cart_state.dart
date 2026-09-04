@@ -3,11 +3,7 @@ class CartState {
 
   static final List<Map<String, dynamic>> items = [];
 
-  static final Map<String, int> offerQuantities = {
-    'Tiramisú': 0,
-    'Coca-Cola': 0,
-    'Sprite': 0,
-  };
+  static final Map<String, int> offerQuantities = {'Coca-Cola': 0, 'Sprite': 0};
 
   static bool get isEmpty {
     return items.isEmpty &&
@@ -35,23 +31,117 @@ class CartState {
     );
 
     final offersTotal =
-        (offerQuantities['Tiramisú'] ?? 0) * 6990 +
         (offerQuantities['Coca-Cola'] ?? 0) * 1200 +
         (offerQuantities['Sprite'] ?? 0) * 1200;
 
     return productTotal + offersTotal;
   }
 
+  static List<String> _normalizeExtras(dynamic rawExtras) {
+    if (rawExtras is! List) {
+      return <String>[];
+    }
+
+    final extras = rawExtras
+        .map((extra) => extra.toString().trim())
+        .where((extra) => extra.isNotEmpty)
+        .toList();
+
+    extras.sort();
+
+    return extras;
+  }
+
+  static String _extrasKey(List<String> extras) {
+    return extras.join('|');
+  }
+
+  static int? _findCustomProductIndex({
+    required String name,
+    required String restaurant,
+    required int unitPrice,
+    required List<String> extras,
+  }) {
+    final extrasKey = _extrasKey(extras);
+
+    final index = items.indexWhere((item) {
+      final itemExtras = _normalizeExtras(item['extras']);
+
+      return item['name'] == name &&
+          item['restaurant'] == restaurant &&
+          item['unitPrice'] == unitPrice &&
+          item['isBaseProduct'] == false &&
+          _extrasKey(itemExtras) == extrasKey;
+    });
+
+    if (index == -1) {
+      return null;
+    }
+
+    return index;
+  }
+
   static void addProduct(Map<String, dynamic> product) {
+    final String name = product['name'] ?? 'Producto';
+
+    final String image = product['image'] ?? '';
+
+    final String description = product['description'] ?? '';
+
+    final String restaurant = product['restaurant'] ?? 'FoodPlease';
+
+    final int unitPrice = (product['unitPrice'] ?? 0) as int;
+
+    final int productQuantity = (product['quantity'] ?? 1) as int;
+
+    final bool isBaseProduct = product['isBaseProduct'] == true;
+
+    if (isBaseProduct) {
+      for (int i = 0; i < productQuantity; i++) {
+        addBaseProduct(
+          name: name,
+          image: image,
+          description: description,
+          restaurant: restaurant,
+          unitPrice: unitPrice,
+        );
+      }
+
+      return;
+    }
+
+    final List<String> extras = _normalizeExtras(product['extras']);
+
+    final existingIndex = _findCustomProductIndex(
+      name: name,
+      restaurant: restaurant,
+      unitPrice: unitPrice,
+      extras: extras,
+    );
+
+    if (existingIndex != null) {
+      final item = items[existingIndex];
+
+      final int currentQuantity = (item['quantity'] ?? 1) as int;
+
+      final int newQuantity = currentQuantity + productQuantity;
+
+      item['quantity'] = newQuantity;
+      item['total'] = newQuantity * unitPrice;
+
+      return;
+    }
+
     items.add({
-      'name': product['name'] ?? 'Producto',
-      'image': product['image'] ?? '',
-      'description': product['description'] ?? '',
-      'restaurant': product['restaurant'] ?? 'FoodPlease',
-      'unitPrice': product['unitPrice'] ?? 0,
-      'quantity': product['quantity'] ?? 1,
-      'total': product['total'] ?? 0,
-      'isBaseProduct': product['isBaseProduct'] ?? false,
+      'name': name,
+      'image': image,
+      'description': description,
+      'restaurant': restaurant,
+      'unitPrice': unitPrice,
+      'quantity': productQuantity,
+      'total': unitPrice * productQuantity,
+      'extras': extras,
+      'isBaseProduct': false,
     });
   }
 
@@ -117,6 +207,7 @@ class CartState {
       'unitPrice': unitPrice,
       'quantity': 1,
       'total': unitPrice,
+      'extras': <String>[],
       'isBaseProduct': true,
     });
   }
@@ -151,9 +242,11 @@ class CartState {
     final item = items[index];
 
     final int quantity = (item['quantity'] ?? 1) as int;
+
     final int unitPrice = (item['unitPrice'] ?? 0) as int;
 
     item['quantity'] = quantity + 1;
+
     item['total'] = (quantity + 1) * unitPrice;
   }
 
@@ -161,21 +254,31 @@ class CartState {
     final item = items[index];
 
     final int quantity = (item['quantity'] ?? 1) as int;
+
     final int unitPrice = (item['unitPrice'] ?? 0) as int;
 
     if (quantity <= 1) {
       items.removeAt(index);
     } else {
       item['quantity'] = quantity - 1;
+
       item['total'] = (quantity - 1) * unitPrice;
     }
   }
 
   static void increaseOffer(String name) {
+    if (!offerQuantities.containsKey(name)) {
+      return;
+    }
+
     offerQuantities[name] = (offerQuantities[name] ?? 0) + 1;
   }
 
   static void decreaseOffer(String name) {
+    if (!offerQuantities.containsKey(name)) {
+      return;
+    }
+
     final currentQuantity = offerQuantities[name] ?? 0;
 
     if (currentQuantity > 0) {

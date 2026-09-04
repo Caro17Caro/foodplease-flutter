@@ -29,6 +29,7 @@ class _CartPageState extends State<CartPage> {
   }
 
   int get cartQuantity => CartState.quantity;
+
   int get cartTotal => CartState.total;
 
   void _increaseQuantity(int index) {
@@ -73,7 +74,7 @@ class _CartPageState extends State<CartPage> {
         body: SafeArea(
           child: isLoading
               ? _buildSkeleton()
-              : CartState.items.isEmpty
+              : CartState.isEmpty
               ? _buildEmptyCart()
               : _buildCart(),
         ),
@@ -94,6 +95,7 @@ class _CartPageState extends State<CartPage> {
             onPressed: _goBack,
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           ),
+
           const Expanded(
             child: Text(
               'Carrito de compra',
@@ -101,6 +103,7 @@ class _CartPageState extends State<CartPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
+
           const SizedBox(width: 48),
         ],
       ),
@@ -111,6 +114,7 @@ class _CartPageState extends State<CartPage> {
     return Column(
       children: [
         _buildHeader(),
+
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(16),
@@ -123,22 +127,32 @@ class _CartPageState extends State<CartPage> {
                   Text('PRECIO'),
                 ],
               ),
+
               const SizedBox(height: 20),
+
               _skeletonProduct(),
+
               const SizedBox(height: 28),
+
               const Divider(),
+
               const SizedBox(height: 16),
+
               const Text(
                 'Ofertas para ti',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
+
               const SizedBox(height: 18),
+
               _skeletonProduct(),
+
               const SizedBox(height: 16),
+
               _skeletonProduct(),
-              const SizedBox(height: 16),
-              _skeletonProduct(),
+
               const SizedBox(height: 30),
+
               Container(
                 height: 55,
                 decoration: BoxDecoration(
@@ -165,22 +179,32 @@ class _CartPageState extends State<CartPage> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
+
         const SizedBox(width: 16),
+
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _skeletonLine(140),
+
               const SizedBox(height: 9),
+
               _skeletonLine(100),
+
               const SizedBox(height: 9),
+
               _skeletonLine(160),
+
               const SizedBox(height: 9),
+
               _skeletonLine(80),
             ],
           ),
         ),
+
         const SizedBox(width: 12),
+
         _skeletonLine(55),
       ],
     );
@@ -201,6 +225,7 @@ class _CartPageState extends State<CartPage> {
     return Column(
       children: [
         _buildHeader(),
+
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
@@ -211,9 +236,11 @@ class _CartPageState extends State<CartPage> {
                     width: 100,
                     child: Text('ARTÍCULOS', style: TextStyle(fontSize: 12)),
                   ),
+
                   Expanded(
                     child: Text('DESCRIPCIÓN', style: TextStyle(fontSize: 12)),
                   ),
+
                   Text('PRECIO', style: TextStyle(fontSize: 12)),
                 ],
               ),
@@ -240,19 +267,10 @@ class _CartPageState extends State<CartPage> {
               const SizedBox(height: 18),
 
               _buildOffer(
-                name: 'Tiramisú',
-                description: 'Exquisito postre italiano',
-                price: 6990,
-                image: 'assets/images/pizza_burrata.jpeg',
-              ),
-
-              const SizedBox(height: 16),
-
-              _buildOffer(
                 name: 'Coca-Cola',
                 description: 'Lata 350 ml',
                 price: 1200,
-                image: 'assets/images/coca_cola.jpeg',
+                image: 'assets/images/coca_cola_clean.jpeg',
               ),
 
               const SizedBox(height: 16),
@@ -273,6 +291,7 @@ class _CartPageState extends State<CartPage> {
                     'Subtotal ($cartQuantity)',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
+
                   Text(
                     'CLP ${_formatPrice(cartTotal)}',
                     style: const TextStyle(fontWeight: FontWeight.w600),
@@ -325,12 +344,18 @@ class _CartPageState extends State<CartPage> {
 
     final int total = item['total'] ?? 0;
 
+    final dynamic rawExtras = item['extras'];
+
+    final List<String> extras = rawExtras is List
+        ? rawExtras.map((extra) => extra.toString()).toList()
+        : <String>[];
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(9),
-          child: Image.asset(image, width: 82, height: 82, fit: BoxFit.cover),
+          child: Image.asset(image, width: 82, height: 82, fit: BoxFit.contain),
         ),
 
         const SizedBox(width: 14),
@@ -362,6 +387,21 @@ class _CartPageState extends State<CartPage> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
+
+              if (extras.isNotEmpty) ...[
+                const SizedBox(height: 6),
+
+                Text(
+                  'Adicionales: ${extras.join(', ')}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: primaryBlue,
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 8),
 
@@ -441,7 +481,7 @@ class _CartPageState extends State<CartPage> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(image, width: 76, height: 76, fit: BoxFit.cover),
+          child: Image.asset(image, width: 76, height: 76, fit: BoxFit.contain),
         ),
 
         const SizedBox(width: 14),
@@ -514,7 +554,7 @@ class _CartPageState extends State<CartPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.remove_shopping_cart_outlined,
                   size: 120,
                   color: primaryBlue,
