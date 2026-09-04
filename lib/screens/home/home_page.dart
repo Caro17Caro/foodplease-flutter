@@ -11,6 +11,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static const Color primaryBlue = Color(0xFF29ABE2);
+
   bool isLoading = true;
   String selectedCategory = 'Hamburguesas';
 
@@ -45,7 +47,9 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _skeletonBox(height: 44, borderRadius: 10),
+
           const SizedBox(height: 10),
+
           SizedBox(
             height: 38,
             child: ListView.separated(
@@ -57,11 +61,17 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
+
           const SizedBox(height: 16),
+
           _skeletonBox(height: 125, borderRadius: 10),
+
           const SizedBox(height: 18),
+
           _skeletonBox(width: 110, height: 16, borderRadius: 4),
+
           const SizedBox(height: 18),
+
           SizedBox(
             height: 105,
             child: ListView.separated(
@@ -72,20 +82,28 @@ class _HomePageState extends State<HomePage> {
                 return Column(
                   children: [
                     _skeletonCircle(size: 64),
+
                     const SizedBox(height: 8),
+
                     _skeletonBox(width: 70, height: 10, borderRadius: 4),
                   ],
                 );
               },
             ),
           ),
+
           const SizedBox(height: 16),
+
           _skeletonBox(width: 120, height: 16, borderRadius: 4),
+
           const SizedBox(height: 16),
+
           Row(
             children: [
               Expanded(child: _buildSkeletonFoodCard()),
+
               const SizedBox(width: 16),
+
               Expanded(child: _buildSkeletonFoodCard()),
             ],
           ),
@@ -110,7 +128,7 @@ class _HomePageState extends State<HomePage> {
             'imagePath': 'assets/images/pizza_carbonara.jpeg',
             'title': 'Pizza Carbonara',
             'restaurant': 'Pizzería Napoli',
-            'price': '\$11.490',
+            'price': '\$11.990',
             'rating': '4.7',
             'reviews': '(980+)',
           },
@@ -183,6 +201,43 @@ class _HomePageState extends State<HomePage> {
     return int.parse(price.replaceAll('\$', '').replaceAll('.', ''));
   }
 
+  int _getRecommendedBaseQuantity(Map<String, String> product) {
+    return CartState.getBaseProductQuantity(
+      name: product['title']!,
+      restaurant: product['restaurant']!,
+    );
+  }
+
+  void _addRecommendedBaseProduct(Map<String, String> product) {
+    setState(() {
+      CartState.addBaseProduct(
+        name: product['title']!,
+        image: product['imagePath']!,
+        description: _getProductDescription(product['title']!),
+        restaurant: product['restaurant']!,
+        unitPrice: _parsePrice(product['price']!),
+      );
+    });
+  }
+
+  void _increaseRecommendedBaseProduct(Map<String, String> product) {
+    setState(() {
+      CartState.increaseBaseProduct(
+        name: product['title']!,
+        restaurant: product['restaurant']!,
+      );
+    });
+  }
+
+  void _decreaseRecommendedBaseProduct(Map<String, String> product) {
+    setState(() {
+      CartState.decreaseBaseProduct(
+        name: product['title']!,
+        restaurant: product['restaurant']!,
+      );
+    });
+  }
+
   Future<void> _openRecommendedProduct(Map<String, String> product) async {
     final String restaurant = product['restaurant'] ?? 'FoodPlease';
 
@@ -230,6 +285,7 @@ class _HomePageState extends State<HomePage> {
           content: Text('Empanadas Aldina estará disponible próximamente.'),
         ),
       );
+
       return;
     }
 
@@ -251,6 +307,7 @@ class _HomePageState extends State<HomePage> {
           content: Text('Agrega un producto para comenzar un carrito.'),
         ),
       );
+
       return;
     }
 
@@ -301,10 +358,15 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSearchBar(),
+
           const SizedBox(height: 10),
+
           _buildCategories(),
+
           const SizedBox(height: 16),
+
           _buildBanner(),
+
           const SizedBox(height: 18),
 
           const Text(
@@ -336,8 +398,18 @@ class _HomePageState extends State<HomePage> {
                   price: recommendedProducts[0]['price']!,
                   rating: recommendedProducts[0]['rating']!,
                   reviews: recommendedProducts[0]['reviews']!,
+                  quantity: _getRecommendedBaseQuantity(recommendedProducts[0]),
                   onTap: () {
                     _openRecommendedProduct(recommendedProducts[0]);
+                  },
+                  onAdd: () {
+                    _addRecommendedBaseProduct(recommendedProducts[0]);
+                  },
+                  onIncrease: () {
+                    _increaseRecommendedBaseProduct(recommendedProducts[0]);
+                  },
+                  onDecrease: () {
+                    _decreaseRecommendedBaseProduct(recommendedProducts[0]);
                   },
                 ),
               ),
@@ -352,8 +424,18 @@ class _HomePageState extends State<HomePage> {
                   price: recommendedProducts[1]['price']!,
                   rating: recommendedProducts[1]['rating']!,
                   reviews: recommendedProducts[1]['reviews']!,
+                  quantity: _getRecommendedBaseQuantity(recommendedProducts[1]),
                   onTap: () {
                     _openRecommendedProduct(recommendedProducts[1]);
+                  },
+                  onAdd: () {
+                    _addRecommendedBaseProduct(recommendedProducts[1]);
+                  },
+                  onIncrease: () {
+                    _increaseRecommendedBaseProduct(recommendedProducts[1]);
+                  },
+                  onDecrease: () {
+                    _decreaseRecommendedBaseProduct(recommendedProducts[1]);
                   },
                 ),
               ),
@@ -380,7 +462,9 @@ class _HomePageState extends State<HomePage> {
         child: const Row(
           children: [
             Icon(Icons.search, color: Colors.black54),
+
             SizedBox(width: 10),
+
             Text(
               'Buscar',
               style: TextStyle(color: Colors.black45, fontSize: 16),
@@ -415,12 +499,12 @@ class _HomePageState extends State<HomePage> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: selectedCategory == category
-                    ? const Color(0xFF29ABE2)
+                    ? primaryBlue
                     : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: selectedCategory == category
-                      ? const Color(0xFF29ABE2)
+                      ? primaryBlue
                       : const Color(0xFFE0E0E0),
                 ),
               ),
@@ -474,7 +558,9 @@ class _HomePageState extends State<HomePage> {
                   height: 1.1,
                 ),
               ),
+
               SizedBox(height: 8),
+
               Text(
                 'Encuentra tus favoritos\nen FoodPlease',
                 style: TextStyle(
@@ -535,7 +621,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 8),
+
                   Text(
                     restaurant['name']!,
                     textAlign: TextAlign.center,
@@ -557,65 +645,163 @@ class _HomePageState extends State<HomePage> {
     required String price,
     required String rating,
     required String reviews,
+    required int quantity,
     required VoidCallback onTap,
+    required VoidCallback onAdd,
+    required VoidCallback onIncrease,
+    required VoidCallback onDecrease,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: AspectRatio(
-              aspectRatio: 1.15,
-              child: Image.asset(imagePath, fit: BoxFit.cover),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-
-          const SizedBox(height: 2),
-
-          Text(
-            restaurant,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11, color: Colors.black54),
-          ),
-
-          const SizedBox(height: 4),
-
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: AspectRatio(
+                  aspectRatio: 1.15,
+                  child: Image.asset(imagePath, fit: BoxFit.cover),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
               Text(
-                '$price.-',
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                restaurant,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 11, color: Colors.black54),
               ),
 
-              const SizedBox(width: 6),
+              const SizedBox(height: 4),
 
-              const Icon(Icons.star, size: 14, color: Colors.amber),
+              Row(
+                children: [
+                  Text(
+                    '$price.-',
+                    style: const TextStyle(fontSize: 11, color: Colors.black54),
+                  ),
 
-              const SizedBox(width: 2),
+                  const SizedBox(width: 6),
 
-              Text(rating, style: const TextStyle(fontSize: 11)),
+                  const Icon(Icons.star, size: 14, color: Colors.amber),
 
-              const SizedBox(width: 3),
+                  const SizedBox(width: 2),
 
-              Expanded(
-                child: Text(
-                  reviews,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 10, color: Colors.black45),
-                ),
+                  Text(rating, style: const TextStyle(fontSize: 11)),
+
+                  const SizedBox(width: 3),
+
+                  Expanded(
+                    child: Text(
+                      reviews,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Colors.black45,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        Align(
+          alignment: Alignment.centerRight,
+          child: _buildQuickAddControl(
+            quantity: quantity,
+            onAdd: onAdd,
+            onIncrease: onIncrease,
+            onDecrease: onDecrease,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAddControl({
+    required int quantity,
+    required VoidCallback onAdd,
+    required VoidCallback onIncrease,
+    required VoidCallback onDecrease,
+  }) {
+    if (quantity <= 0) {
+      return InkWell(
+        onTap: onAdd,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: primaryBlue,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(Icons.add, size: 21, color: Colors.white),
+        ),
+      );
+    }
+
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: primaryBlue),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: onDecrease,
+            borderRadius: BorderRadius.circular(18),
+            child: const SizedBox(
+              width: 28,
+              height: 34,
+              child: Icon(Icons.remove, size: 18, color: primaryBlue),
+            ),
+          ),
+
+          SizedBox(
+            width: 25,
+            child: Text(
+              '$quantity',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF303030),
+              ),
+            ),
+          ),
+
+          InkWell(
+            onTap: onIncrease,
+            borderRadius: BorderRadius.circular(18),
+            child: const SizedBox(
+              width: 28,
+              height: 34,
+              child: Icon(Icons.add, size: 18, color: primaryBlue),
+            ),
           ),
         ],
       ),
@@ -626,7 +812,7 @@ class _HomePageState extends State<HomePage> {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: 0,
-      selectedItemColor: const Color(0xFF29ABE2),
+      selectedItemColor: primaryBlue,
       unselectedItemColor: Colors.black54,
       showSelectedLabels: false,
       showUnselectedLabels: false,
@@ -689,7 +875,7 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     alignment: Alignment.center,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF29ABE2),
+                      color: primaryBlue,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -723,9 +909,13 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _skeletonBox(height: 150, borderRadius: 8),
+
         const SizedBox(height: 10),
+
         _skeletonBox(width: 70, height: 12, borderRadius: 4),
+
         const SizedBox(height: 8),
+
         _skeletonBox(width: 100, height: 10, borderRadius: 4),
       ],
     );

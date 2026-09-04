@@ -298,6 +298,42 @@ class _RestaurantPageState extends State<RestaurantPage> {
     };
   }
 
+  int _getBaseProductQuantity({required String name}) {
+    return CartState.getBaseProductQuantity(
+      name: name,
+      restaurant: restaurantName,
+    );
+  }
+
+  void _addBaseProduct({
+    required String name,
+    required String image,
+    required String description,
+    required int price,
+  }) {
+    setState(() {
+      CartState.addBaseProduct(
+        name: name,
+        image: image,
+        description: description,
+        restaurant: restaurantName,
+        unitPrice: price,
+      );
+    });
+  }
+
+  void _increaseBaseProduct({required String name}) {
+    setState(() {
+      CartState.increaseBaseProduct(name: name, restaurant: restaurantName);
+    });
+  }
+
+  void _decreaseBaseProduct({required String name}) {
+    setState(() {
+      CartState.decreaseBaseProduct(name: name, restaurant: restaurantName);
+    });
+  }
+
   Future<void> _openProduct({
     required String name,
     required String image,
@@ -325,9 +361,33 @@ class _RestaurantPageState extends State<RestaurantPage> {
     }
 
     if (result is Map<String, dynamic>) {
-      setState(() {
-        CartState.addProduct(result);
-      });
+      final productResult = Map<String, dynamic>.from(result);
+
+      final int resultUnitPrice = (productResult['unitPrice'] ?? 0) as int;
+
+      final int resultQuantity = (productResult['quantity'] ?? 1) as int;
+
+      final bool isBaseProduct = resultUnitPrice == price;
+
+      if (isBaseProduct) {
+        setState(() {
+          for (int i = 0; i < resultQuantity; i++) {
+            CartState.addBaseProduct(
+              name: name,
+              image: image,
+              description: description,
+              restaurant: restaurantName,
+              unitPrice: price,
+            );
+          }
+        });
+      } else {
+        productResult['isBaseProduct'] = false;
+
+        setState(() {
+          CartState.addProduct(productResult);
+        });
+      }
     }
   }
 
@@ -361,23 +421,37 @@ class _RestaurantPageState extends State<RestaurantPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _skeletonBox(width: 240, height: 24),
+
               const SizedBox(height: 10),
+
               _skeletonBox(width: 180, height: 16),
+
               const SizedBox(height: 24),
+
               Row(
                 children: [
                   _skeletonBox(width: 90, height: 36),
+
                   const SizedBox(width: 10),
+
                   _skeletonBox(width: 90, height: 36),
+
                   const SizedBox(width: 10),
+
                   _skeletonBox(width: 90, height: 36),
                 ],
               ),
+
               const SizedBox(height: 28),
+
               _skeletonProduct(),
+
               const SizedBox(height: 14),
+
               _skeletonProduct(),
+
               const SizedBox(height: 14),
+
               _skeletonProduct(),
             ],
           ),
@@ -388,7 +462,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
   Widget _skeletonProduct() {
     return Container(
-      height: 115,
+      height: 130,
       decoration: BoxDecoration(
         color: const Color(0xFFF2F2F2),
         borderRadius: BorderRadius.circular(14),
@@ -459,18 +533,24 @@ class _RestaurantPageState extends State<RestaurantPage> {
               Row(
                 children: [
                   const Icon(Icons.star, color: Colors.amber, size: 19),
+
                   const SizedBox(width: 4),
+
                   Text(
                     restaurantRating,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
+
                   const SizedBox(width: 14),
+
                   const Icon(
                     Icons.access_time,
                     size: 18,
                     color: Colors.black54,
                   ),
+
                   const SizedBox(width: 5),
+
                   Text(
                     restaurantTime,
                     style: const TextStyle(color: Colors.black54),
@@ -576,61 +656,191 @@ class _RestaurantPageState extends State<RestaurantPage> {
     required int price,
     required String image,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: () {
-        _openProduct(
-          name: name,
-          image: image,
-          description: description,
-          price: price,
-        );
-      },
-      child: Container(
-        height: 120,
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE4E4E4)),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(13),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    final int quantity = _getBaseProductQuantity(name: name);
+
+    return Container(
+      height: 132,
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFE4E4E4)),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  _openProduct(
+                    name: name,
+                    image: image,
+                    description: description,
+                    price: price,
+                  );
+                },
+                child: Row(
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(13),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            Text(
+                              description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: Colors.black54,
+                              ),
+                            ),
+
+                            const Spacer(),
+
+                            Text(
+                              '\$${_formatPrice(price)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '\$${_formatPrice(price)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+
+                    SizedBox(
+                      width: 115,
+                      height: double.infinity,
+                      child: Image.asset(image, fit: BoxFit.cover),
                     ),
                   ],
                 ),
               ),
             ),
+          ),
+
+          Positioned(
+            right: 8,
+            bottom: 8,
+            child: _buildQuickAddControl(
+              quantity: quantity,
+              onAdd: () {
+                _addBaseProduct(
+                  name: name,
+                  image: image,
+                  description: description,
+                  price: price,
+                );
+              },
+              onIncrease: () {
+                _increaseBaseProduct(name: name);
+              },
+              onDecrease: () {
+                _decreaseBaseProduct(name: name);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAddControl({
+    required int quantity,
+    required VoidCallback onAdd,
+    required VoidCallback onIncrease,
+    required VoidCallback onDecrease,
+  }) {
+    if (quantity <= 0) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onAdd,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: primaryBlue,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.10),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.add, size: 21, color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: primaryBlue),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: onDecrease,
+              borderRadius: BorderRadius.circular(18),
+              child: const SizedBox(
+                width: 28,
+                height: 34,
+                child: Icon(Icons.remove, size: 18, color: primaryBlue),
+              ),
+            ),
+
             SizedBox(
-              width: 115,
-              height: double.infinity,
-              child: Image.asset(image, fit: BoxFit.cover),
+              width: 25,
+              child: Text(
+                '$quantity',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF303030),
+                ),
+              ),
+            ),
+
+            InkWell(
+              onTap: onIncrease,
+              borderRadius: BorderRadius.circular(18),
+              child: const SizedBox(
+                width: 28,
+                height: 34,
+                child: Icon(Icons.add, size: 18, color: primaryBlue),
+              ),
             ),
           ],
         ),
@@ -665,12 +875,16 @@ class _RestaurantPageState extends State<RestaurantPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
                   const SizedBox(height: 7),
+
                   Text(
                     description,
                     style: const TextStyle(color: Colors.black54),
                   ),
+
                   const Spacer(),
+
                   const Text(
                     'No disponible',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -678,6 +892,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                 ],
               ),
             ),
+
             const Icon(Icons.block, size: 38, color: Colors.black38),
           ],
         ),
@@ -715,10 +930,12 @@ class _RestaurantPageState extends State<RestaurantPage> {
                     ),
                   ),
                 ),
+
                 const Text(
                   'Ver pedido',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+
                 Text(
                   '\$${_formatPrice(cartTotal)}',
                   style: const TextStyle(fontWeight: FontWeight.bold),

@@ -51,7 +51,100 @@ class CartState {
       'unitPrice': product['unitPrice'] ?? 0,
       'quantity': product['quantity'] ?? 1,
       'total': product['total'] ?? 0,
+      'isBaseProduct': product['isBaseProduct'] ?? false,
     });
+  }
+
+  static int getBaseProductQuantity({
+    required String name,
+    required String restaurant,
+  }) {
+    int totalQuantity = 0;
+
+    for (final item in items) {
+      final bool sameProduct =
+          item['name'] == name &&
+          item['restaurant'] == restaurant &&
+          item['isBaseProduct'] == true;
+
+      if (sameProduct) {
+        totalQuantity += (item['quantity'] ?? 0) as int;
+      }
+    }
+
+    return totalQuantity;
+  }
+
+  static int? _findBaseProductIndex({
+    required String name,
+    required String restaurant,
+  }) {
+    final index = items.indexWhere((item) {
+      return item['name'] == name &&
+          item['restaurant'] == restaurant &&
+          item['isBaseProduct'] == true;
+    });
+
+    if (index == -1) {
+      return null;
+    }
+
+    return index;
+  }
+
+  static void addBaseProduct({
+    required String name,
+    required String image,
+    required String description,
+    required String restaurant,
+    required int unitPrice,
+  }) {
+    final existingIndex = _findBaseProductIndex(
+      name: name,
+      restaurant: restaurant,
+    );
+
+    if (existingIndex != null) {
+      increaseProductQuantity(existingIndex);
+      return;
+    }
+
+    items.add({
+      'name': name,
+      'image': image,
+      'description': description,
+      'restaurant': restaurant,
+      'unitPrice': unitPrice,
+      'quantity': 1,
+      'total': unitPrice,
+      'isBaseProduct': true,
+    });
+  }
+
+  static void increaseBaseProduct({
+    required String name,
+    required String restaurant,
+  }) {
+    final index = _findBaseProductIndex(name: name, restaurant: restaurant);
+
+    if (index == null) {
+      return;
+    }
+
+    increaseProductQuantity(index);
+  }
+
+  static void decreaseBaseProduct({
+    required String name,
+    required String restaurant,
+  }) {
+    final index = _findBaseProductIndex(name: name, restaurant: restaurant);
+
+    if (index == null) {
+      return;
+    }
+
+    decreaseProductQuantity(index);
   }
 
   static void increaseProductQuantity(int index) {
