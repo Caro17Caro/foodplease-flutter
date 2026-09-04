@@ -118,6 +118,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     Navigator.pop(context, metodo);
   }
 
+  void seleccionarMercadoPago() {
+    appState.seleccionarMetodoPago('Mercado Pago');
+
+    Navigator.pop(context, 'Mercado Pago');
+  }
+
   void seleccionarEfectivo() {
     appState.seleccionarMetodoPago('Efectivo');
 
@@ -203,9 +209,22 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       }),
 
                     _paymentOption(
+                      icon: Icons.account_balance_wallet_outlined,
+                      iconColor: const Color(0xFF009EE3),
+                      title: 'Mercado Pago',
+                      subtitle: 'Paga con tu cuenta de Mercado Pago',
+                      selected:
+                          appState.metodoPagoSeleccionado == 'Mercado Pago',
+                      onTap: seleccionarMercadoPago,
+                    ),
+
+                    _divider(),
+
+                    _paymentOption(
                       icon: Icons.payments_outlined,
                       iconColor: const Color(0xFF66BB6A),
                       title: 'Efectivo',
+                      subtitle: 'Paga al momento de recibir tu pedido',
                       selected: appState.metodoPagoSeleccionado == 'Efectivo',
                       onTap: seleccionarEfectivo,
                     ),
@@ -358,13 +377,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     required IconData icon,
     required Color iconColor,
     required String title,
+    required String subtitle,
     required bool selected,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
             Icon(icon, size: 21, color: iconColor),
@@ -372,14 +392,39 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             const SizedBox(width: 14),
 
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF303030)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF303030),
+                    ),
+                  ),
+
+                  const SizedBox(height: 3),
+
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF888888),
+                    ),
+                  ),
+                ],
               ),
             ),
 
             if (selected)
-              const Icon(Icons.check_circle, size: 20, color: primaryColor),
+              const Icon(Icons.check_circle, size: 20, color: primaryColor)
+            else
+              const Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Color(0xFF999999),
+              ),
           ],
         ),
       ),
@@ -412,7 +457,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           const SizedBox(height: 5),
 
           const Text(
-            'Puedes pagar en efectivo o agregar un método de pago guardado.',
+            'Puedes pagar con Mercado Pago, en efectivo o agregar un método de pago guardado.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11.5, color: Color(0xFF888888)),
           ),
