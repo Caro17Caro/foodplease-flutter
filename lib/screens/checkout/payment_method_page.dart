@@ -118,6 +118,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     Navigator.pop(context, metodo);
   }
 
+  void seleccionarEfectivo() {
+    appState.seleccionarMetodoPago('Efectivo');
+
+    Navigator.pop(context, 'Efectivo');
+  }
+
   Future<void> administrarMetodosPago() async {
     await Navigator.pushNamed(context, AppRoutes.profilePaymentMethods);
 
@@ -195,6 +201,16 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                           ],
                         );
                       }),
+
+                    _paymentOption(
+                      icon: Icons.payments_outlined,
+                      iconColor: const Color(0xFF66BB6A),
+                      title: 'Efectivo',
+                      selected: appState.metodoPagoSeleccionado == 'Efectivo',
+                      onTap: seleccionarEfectivo,
+                    ),
+
+                    _divider(),
 
                     InkWell(
                       onTap: administrarMetodosPago,
@@ -338,6 +354,38 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     );
   }
 
+  Widget _paymentOption({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        child: Row(
+          children: [
+            Icon(icon, size: 21, color: iconColor),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF303030)),
+              ),
+            ),
+
+            if (selected)
+              const Icon(Icons.check_circle, size: 20, color: primaryColor),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmpty() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 45),
@@ -364,7 +412,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           const SizedBox(height: 5),
 
           const Text(
-            'Agrega un método de pago para poder seleccionarlo al realizar tu pedido.',
+            'Puedes pagar en efectivo o agregar un método de pago guardado.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11.5, color: Color(0xFF888888)),
           ),
