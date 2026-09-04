@@ -17,7 +17,8 @@ class _RestaurantPageState extends State<RestaurantPage> {
   bool initializedFromArguments = false;
 
   String restaurantName = 'La Casa de la Hamburguesa';
-  String restaurantImage = 'assets/images/churrasco_italiano.jpg';
+  String restaurantImage =
+      'assets/images/restaurante_la_casa_de_la_hamburguesa.jpeg';
   String restaurantRating = '4.9';
   String restaurantTime = '25-35 min';
   String restaurantDescription = 'Hamburguesas • Sandwich • Comida rápida';
@@ -96,7 +97,8 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
   void _configureHamburgerRestaurant() {
     restaurantName = 'La Casa de la Hamburguesa';
-    restaurantImage = 'assets/images/churrasco_italiano.jpg';
+    restaurantImage =
+        'assets/images/restaurante_la_casa_de_la_hamburguesa.jpeg';
     restaurantRating = '4.9';
     restaurantTime = '25-35 min';
     restaurantDescription = 'Hamburguesas • Sandwich • Comida rápida';
@@ -112,7 +114,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'description':
               'Hamburguesa doble carne, queso, tomate y salsa especial.',
           'price': 8990,
-          'image': 'assets/images/churrasco_italiano.jpg',
+          'image': 'assets/images/doble_carne.jpeg',
         },
         {
           'name': 'Barros Luco',
@@ -131,13 +133,13 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'name': 'Chacarero',
           'description': 'Carne, tomate, porotos verdes y ají verde.',
           'price': 7490,
-          'image': 'assets/images/churrasco_italiano.jpg',
+          'image': 'assets/images/chacarero.jpeg',
         },
         {
           'name': 'Aliado',
           'description': 'Jamón y queso caliente en pan tostado.',
           'price': 4990,
-          'image': 'assets/images/barros_luco.jpeg',
+          'image': 'assets/images/aliado.jpeg',
         },
       ],
       'Combos': [
@@ -145,13 +147,13 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'name': 'Combo Doble Carne',
           'description': 'Doble Carne acompañada de papas y bebida.',
           'price': 11990,
-          'image': 'assets/images/churrasco_italiano.jpg',
+          'image': 'assets/images/combo_doble_carne.jpeg',
         },
         {
           'name': 'Combo Barros Luco',
           'description': 'Barros Luco acompañado de papas y bebida.',
           'price': 10990,
-          'image': 'assets/images/barros_luco.jpeg',
+          'image': 'assets/images/combo_barros_luco.jpeg',
         },
       ],
       'Bebidas': [
@@ -159,7 +161,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'name': 'Coca-Cola',
           'description': 'Bebida Coca-Cola individual.',
           'price': 1990,
-          'image': 'assets/images/coca_cola.jpeg',
+          'image': 'assets/images/coca_cola_clean.jpeg',
         },
         {
           'name': 'Fanta',
@@ -173,7 +175,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
   void _configurePizzaRestaurant() {
     restaurantName = 'Pizzería Napoli';
-    restaurantImage = 'assets/images/pizza_burrata.jpeg';
+    restaurantImage = 'assets/images/restaurante_pizzeria_napoli.jpeg';
     restaurantRating = '4.8';
     restaurantTime = '30-40 min';
     restaurantDescription = 'Pizzas • Cocina italiana • Artesanal';
@@ -208,7 +210,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'name': 'Coca-Cola',
           'description': 'Bebida Coca-Cola individual.',
           'price': 1990,
-          'image': 'assets/images/coca_cola.jpeg',
+          'image': 'assets/images/coca_cola_clean.jpeg',
         },
         {
           'name': 'Sprite',
@@ -222,7 +224,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
   void _configureCompletoRestaurant() {
     restaurantName = 'El Maestro del Completo';
-    restaurantImage = 'assets/images/completo_italiano.jpeg';
+    restaurantImage = 'assets/images/restaurante_maestro_completo.jpeg';
     restaurantRating = '4.7';
     restaurantTime = '20-30 min';
     restaurantDescription = 'Completos • Sandwich • Comida rápida';
@@ -251,7 +253,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'name': 'Coca-Cola',
           'description': 'Bebida Coca-Cola individual.',
           'price': 1990,
-          'image': 'assets/images/coca_cola.jpeg',
+          'image': 'assets/images/coca_cola_clean.jpeg',
         },
         {
           'name': 'Fanta',
@@ -265,7 +267,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
   void _configureBeverageRestaurant() {
     restaurantName = 'FoodPlease Bebidas';
-    restaurantImage = 'assets/images/coca_cola.jpeg';
+    restaurantImage = 'assets/images/coca_cola_clean.jpeg';
     restaurantRating = '4.8';
     restaurantTime = '15-25 min';
     restaurantDescription = 'Bebidas • Refrescos';
@@ -280,7 +282,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
           'name': 'Coca-Cola',
           'description': 'Bebida Coca-Cola individual.',
           'price': 1990,
-          'image': 'assets/images/coca_cola.jpeg',
+          'image': 'assets/images/coca_cola_clean.jpeg',
         },
         {
           'name': 'Fanta',
@@ -492,7 +494,11 @@ class _RestaurantPageState extends State<RestaurantPage> {
             SizedBox(
               height: 220,
               width: double.infinity,
-              child: Image.asset(restaurantImage, fit: BoxFit.cover),
+              child: Image.asset(
+                restaurantImage,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+              ),
             ),
             Positioned(
               top: 16,
@@ -723,7 +729,14 @@ class _RestaurantPageState extends State<RestaurantPage> {
                     SizedBox(
                       width: 115,
                       height: double.infinity,
-                      child: Image.asset(image, fit: BoxFit.cover),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Image.asset(
+                          image,
+                          fit: BoxFit.contain,
+                          alignment: Alignment.center,
+                        ),
+                      ),
                     ),
                   ],
                 ),

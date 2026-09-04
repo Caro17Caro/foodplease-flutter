@@ -157,7 +157,7 @@ class _HomePageState extends State<HomePage> {
       case 'Bebidas':
         return [
           {
-            'imagePath': 'assets/images/coca_cola.jpeg',
+            'imagePath': 'assets/images/coca_cola_clean.jpeg',
             'title': 'Coca-Cola',
             'restaurant': 'FoodPlease Bebidas',
             'price': '\$1.990',
@@ -178,7 +178,7 @@ class _HomePageState extends State<HomePage> {
       default:
         return [
           {
-            'imagePath': 'assets/images/churrasco_italiano.jpg',
+            'imagePath': 'assets/images/doble_carne.jpeg',
             'title': 'Doble Carne',
             'restaurant': 'La Casa de la Hamburguesa',
             'price': '\$8.990',
@@ -579,18 +579,21 @@ class _HomePageState extends State<HomePage> {
   Widget _buildRestaurants() {
     final restaurants = [
       {
-        'image': 'assets/images/barros_luco.jpeg',
+        'image': 'assets/images/restaurante_la_casa_de_la_hamburguesa.jpeg',
         'name': 'La Casa de la\nHamburguesa',
       },
       {
-        'image': 'assets/images/pizza_carbonara.jpeg',
+        'image': 'assets/images/restaurante_pizzeria_napoli.jpeg',
         'name': 'Pizzería\nNapoli',
       },
       {
-        'image': 'assets/images/completo_italiano.jpeg',
+        'image': 'assets/images/restaurante_maestro_completo.jpeg',
         'name': 'El Maestro del\nCompleto',
       },
-      {'image': 'assets/images/lomito.jpeg', 'name': 'Empanadas\nAldina'},
+      {
+        'image': 'assets/images/restaurante_empanadas_aldina.jpeg',
+        'name': 'Empanadas\nAldina',
+      },
     ];
 
     return SizedBox(
@@ -664,7 +667,18 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(8),
                 child: AspectRatio(
                   aspectRatio: 1.15,
-                  child: Image.asset(imagePath, fit: BoxFit.cover),
+                  child: Padding(
+                    padding: selectedCategory == 'Bebidas'
+                        ? const EdgeInsets.all(10)
+                        : EdgeInsets.zero,
+                    child: Image.asset(
+                      imagePath,
+                      fit: selectedCategory == 'Bebidas'
+                          ? BoxFit.contain
+                          : BoxFit.cover,
+                      alignment: Alignment.center,
+                    ),
+                  ),
                 ),
               ),
 
