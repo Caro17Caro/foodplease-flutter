@@ -307,6 +307,13 @@ class _RestaurantPageState extends State<RestaurantPage> {
     );
   }
 
+  int _getCustomizedProductQuantity({required String name}) {
+    return CartState.getCustomizedProductQuantity(
+      name: name,
+      restaurant: restaurantName,
+    );
+  }
+
   void _addBaseProduct({
     required String name,
     required String image,
@@ -663,6 +670,8 @@ class _RestaurantPageState extends State<RestaurantPage> {
     required String image,
   }) {
     final int quantity = _getBaseProductQuantity(name: name);
+    final int customizedQuantity =
+        _getCustomizedProductQuantity(name: name);
 
     return Container(
       height: 132,
@@ -747,25 +756,63 @@ class _RestaurantPageState extends State<RestaurantPage> {
           Positioned(
             right: 8,
             bottom: 8,
-            child: _buildQuickAddControl(
-              quantity: quantity,
-              onAdd: () {
-                _addBaseProduct(
-                  name: name,
-                  image: image,
-                  description: description,
-                  price: price,
-                );
-              },
-              onIncrease: () {
-                _increaseBaseProduct(name: name);
-              },
-              onDecrease: () {
-                _decreaseBaseProduct(name: name);
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (customizedQuantity > 0) ...[
+                  _buildCustomizedIndicator(customizedQuantity),
+                  const SizedBox(height: 5),
+                ],
+                _buildQuickAddControl(
+                  quantity: quantity,
+                  onAdd: () {
+                    _addBaseProduct(
+                      name: name,
+                      image: image,
+                      description: description,
+                      price: price,
+                    );
+                  },
+                  onIncrease: () {
+                    _increaseBaseProduct(name: name);
+                  },
+                  onDecrease: () {
+                    _decreaseBaseProduct(name: name);
+                  },
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCustomizedIndicator(int quantity) {
+    final label =
+        quantity == 1 ? '1 personalizado' : '$quantity personalizados';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primaryBlue),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+          color: primaryBlue,
+        ),
       ),
     );
   }

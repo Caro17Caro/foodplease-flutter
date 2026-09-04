@@ -208,6 +208,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  int _getRecommendedCustomizedQuantity(Map<String, String> product) {
+    return CartState.getCustomizedProductQuantity(
+      name: product['title']!,
+      restaurant: product['restaurant']!,
+    );
+  }
+
   void _addRecommendedBaseProduct(Map<String, String> product) {
     setState(() {
       CartState.addBaseProduct(
@@ -399,6 +406,8 @@ class _HomePageState extends State<HomePage> {
                   rating: recommendedProducts[0]['rating']!,
                   reviews: recommendedProducts[0]['reviews']!,
                   quantity: _getRecommendedBaseQuantity(recommendedProducts[0]),
+                  customizedQuantity:
+                      _getRecommendedCustomizedQuantity(recommendedProducts[0]),
                   onTap: () {
                     _openRecommendedProduct(recommendedProducts[0]);
                   },
@@ -425,6 +434,8 @@ class _HomePageState extends State<HomePage> {
                   rating: recommendedProducts[1]['rating']!,
                   reviews: recommendedProducts[1]['reviews']!,
                   quantity: _getRecommendedBaseQuantity(recommendedProducts[1]),
+                  customizedQuantity:
+                      _getRecommendedCustomizedQuantity(recommendedProducts[1]),
                   onTap: () {
                     _openRecommendedProduct(recommendedProducts[1]);
                   },
@@ -649,6 +660,7 @@ class _HomePageState extends State<HomePage> {
     required String rating,
     required String reviews,
     required int quantity,
+    required int customizedQuantity,
     required VoidCallback onTap,
     required VoidCallback onAdd,
     required VoidCallback onIncrease,
@@ -740,14 +752,45 @@ class _HomePageState extends State<HomePage> {
 
         Align(
           alignment: Alignment.centerRight,
-          child: _buildQuickAddControl(
-            quantity: quantity,
-            onAdd: onAdd,
-            onIncrease: onIncrease,
-            onDecrease: onDecrease,
+          child: Wrap(
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              if (customizedQuantity > 0)
+                _buildCustomizedIndicator(customizedQuantity),
+              _buildQuickAddControl(
+                quantity: quantity,
+                onAdd: onAdd,
+                onIncrease: onIncrease,
+                onDecrease: onDecrease,
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCustomizedIndicator(int quantity) {
+    final label =
+        quantity == 1 ? '1 personalizado' : '$quantity personalizados';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: primaryBlue.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+          color: primaryBlue,
+        ),
+      ),
     );
   }
 

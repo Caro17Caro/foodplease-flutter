@@ -145,6 +145,26 @@ class CartState {
     });
   }
 
+  static int getCustomizedProductQuantity({
+    required String name,
+    required String restaurant,
+  }) {
+    int totalQuantity = 0;
+
+    for (final item in items) {
+      final bool sameProduct =
+          item['name'] == name &&
+          item['restaurant'] == restaurant &&
+          item['isBaseProduct'] != true;
+
+      if (sameProduct) {
+        totalQuantity += (item['quantity'] ?? 0) as int;
+      }
+    }
+
+    return totalQuantity;
+  }
+
   static int getBaseProductQuantity({
     required String name,
     required String restaurant,
