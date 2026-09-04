@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../state/app_state.dart';
 import '../../state/cart_state.dart';
 
@@ -27,21 +28,133 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   final TextEditingController promoController = TextEditingController();
 
-  String direccionSeleccionada = AppState.instance.direccionSeleccionada;
+  String direccionSeleccionada =
+      AppState.instance.direccionSeleccionada.trim().isNotEmpty
+      ? AppState.instance.direccionSeleccionada
+      : 'Selecciona una dirección';
 
   String metodoPagoSeleccionado = AppState.instance.metodoPagoSeleccionado;
 
   @override
   void initState() {
     super.initState();
+    _initializeCheckout();
+  }
 
-    Timer(const Duration(milliseconds: 1300), () {
-      if (mounted) {
+  Future<void> _initializeCheckout() async {
+    final minimumLoadingTime = Future.delayed(
+      const Duration(milliseconds: 1300),
+    );
+
+    await _loadInitialAddress();
+    await minimumLoadingTime;
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      cargando = false;
+    });
+  }
+
+  Future<void> _loadInitialAddress() async {
+    try {
+      final response = await ApiService.getAddresses();
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode != 200) {
+        return;
+      }
+
+      final data = response['addresses'];
+
+      if (data is! List) {
+        return;
+      }
+
+      final addresses = data
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+
+      if (addresses.isEmpty) {
         setState(() {
-          cargando = false;
+          direccionSeleccionada = 'Selecciona una dirección';
+        });
+
+        AppState.instance.seleccionarDireccion('');
+
+        return;
+      }
+
+      final String savedAddress = AppState.instance.direccionSeleccionada
+          .trim();
+
+      String? selectedAddress;
+
+      if (savedAddress.isNotEmpty) {
+        for (final address in addresses) {
+          final formattedAddress = _formatAddress(address);
+
+          if (formattedAddress == savedAddress) {
+            selectedAddress = formattedAddress;
+            break;
+          }
+        }
+      }
+
+      if (selectedAddress == null) {
+        Map<String, dynamic>? principalAddress;
+
+        for (final address in addresses) {
+          if (address['es_principal'] == true) {
+            principalAddress = address;
+            break;
+          }
+        }
+
+        final addressToUse = principalAddress ?? addresses.first;
+
+        selectedAddress = _formatAddress(addressToUse);
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        direccionSeleccionada = selectedAddress!;
+      });
+
+      AppState.instance.seleccionarDireccion(selectedAddress);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      if (AppState.instance.direccionSeleccionada.trim().isEmpty) {
+        setState(() {
+          direccionSeleccionada = 'Selecciona una dirección';
         });
       }
-    });
+    }
+  }
+
+  String _formatAddress(Map<String, dynamic> addressData) {
+    final direccion = (addressData['direccion'] ?? '').toString().trim();
+    final comuna = (addressData['comuna'] ?? '').toString().trim();
+
+    if (comuna.isEmpty) {
+      return direccion;
+    }
+
+    return '$direccion, $comuna';
   }
 
   @override
@@ -697,17 +810,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Map<String, dynamic> _offerData(String name) {
     switch (name) {
-      case 'Tiramisú':
-        return {
-          'description': 'Exquisito postre italiano',
-          'image': 'assets/images/pizza_burrata.jpeg',
-          'price': 6990,
-        };
-
       case 'Coca-Cola':
         return {
           'description': 'Lata 350 ml',
-          'image': 'assets/images/coca_cola.jpeg',
+          'image': 'assets/images/coca_cola_clean.jpeg',
           'price': 1200,
         };
 

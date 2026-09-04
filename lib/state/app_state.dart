@@ -7,23 +7,19 @@ class AppState {
   // TARJETAS GUARDADAS
   // ============================================================
 
-  final List<String> tarjetasGuardadas = [
-    'Visa •••• 5623',
-  ];
+  final List<String> tarjetasGuardadas = ['Visa •••• 5623'];
 
   // ============================================================
   // MÉTODO DE PAGO
   // ============================================================
 
-  String metodoPagoSeleccionado =
-      'Visa •••• 5623';
+  String metodoPagoSeleccionado = 'Visa •••• 5623';
 
   // ============================================================
   // DIRECCIÓN
   // ============================================================
 
-  String direccionSeleccionada =
-      'Pasaje Matucana 8853, La Reina';
+  String direccionSeleccionada = '';
 
   // ============================================================
   // TARJETAS
@@ -42,11 +38,9 @@ class AppState {
 
     if (metodoPagoSeleccionado == tarjeta) {
       if (tarjetasGuardadas.isNotEmpty) {
-        metodoPagoSeleccionado =
-            tarjetasGuardadas.first;
+        metodoPagoSeleccionado = tarjetasGuardadas.first;
       } else {
-        metodoPagoSeleccionado =
-            'Mercado Pago';
+        metodoPagoSeleccionado = 'Mercado Pago';
       }
     }
   }
