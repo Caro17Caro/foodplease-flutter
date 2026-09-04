@@ -271,8 +271,6 @@ class OrderDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-
-            _bottomNavigation(),
           ],
         ),
       ),
@@ -366,34 +364,6 @@ class OrderDetailPage extends StatelessWidget {
           ),
 
           const SizedBox(width: 56),
-        ],
-      ),
-    );
-  }
-
-  Widget _bottomNavigation() {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEAEAEA))),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Icon(Icons.home, size: 27, color: Color(0xFF666666)),
-
-          Icon(Icons.explore_outlined, size: 27, color: Color(0xFF666666)),
-
-          Icon(
-            Icons.shopping_cart_outlined,
-            size: 27,
-            color: Color(0xFF666666),
-          ),
-
-          Icon(Icons.notifications_none, size: 27, color: Color(0xFF666666)),
-
-          Icon(Icons.person_outline, size: 27, color: primaryColor),
         ],
       ),
     );
