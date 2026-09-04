@@ -7,13 +7,13 @@ class AppState {
   // TARJETAS GUARDADAS
   // ============================================================
 
-  final List<String> tarjetasGuardadas = ['Visa •••• 5623'];
+  final List<String> tarjetasGuardadas = [];
 
   // ============================================================
   // MÉTODO DE PAGO
   // ============================================================
 
-  String metodoPagoSeleccionado = 'Visa •••• 5623';
+  String metodoPagoSeleccionado = '';
 
   // ============================================================
   // DIRECCIÓN

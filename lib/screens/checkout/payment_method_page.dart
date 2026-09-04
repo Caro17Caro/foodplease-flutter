@@ -64,6 +64,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             return aPrincipal ? -1 : 1;
           });
 
+          _syncSelectedPaymentMethod(loadedMethods);
+
           setState(() {
             paymentMethods = loadedMethods;
             cargandoMetodos = false;
@@ -90,6 +92,43 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         errorMessage = 'No fue posible conectar con el servidor.';
       });
     }
+  }
+
+  void _syncSelectedPaymentMethod(List<Map<String, dynamic>> loadedMethods) {
+    final String currentMethod = appState.metodoPagoSeleccionado.trim();
+
+    if (currentMethod == 'Mercado Pago' || currentMethod == 'Efectivo') {
+      return;
+    }
+
+    final bool currentMethodExists = loadedMethods.any(
+      (paymentMethod) => _formatPaymentMethod(paymentMethod) == currentMethod,
+    );
+
+    if (currentMethodExists) {
+      return;
+    }
+
+    Map<String, dynamic>? principalMethod;
+
+    for (final paymentMethod in loadedMethods) {
+      if (paymentMethod['es_principal'] == true) {
+        principalMethod = paymentMethod;
+        break;
+      }
+    }
+
+    if (principalMethod != null) {
+      appState.seleccionarMetodoPago(_formatPaymentMethod(principalMethod));
+      return;
+    }
+
+    if (loadedMethods.isNotEmpty) {
+      appState.seleccionarMetodoPago(_formatPaymentMethod(loadedMethods.first));
+      return;
+    }
+
+    appState.seleccionarMetodoPago('Mercado Pago');
   }
 
   String _formatPaymentMethod(Map<String, dynamic> paymentMethod) {

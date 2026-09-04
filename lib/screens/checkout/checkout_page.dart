@@ -33,7 +33,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ? AppState.instance.direccionSeleccionada
       : 'Selecciona una dirección';
 
-  String metodoPagoSeleccionado = AppState.instance.metodoPagoSeleccionado;
+  String metodoPagoSeleccionado =
+      AppState.instance.metodoPagoSeleccionado.trim().isNotEmpty
+      ? AppState.instance.metodoPagoSeleccionado
+      : 'Cargando método de pago...';
 
   @override
   void initState() {
@@ -46,7 +49,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       const Duration(milliseconds: 1300),
     );
 
-    await _loadInitialAddress();
+    await Future.wait([_loadInitialAddress(), _loadInitialPaymentMethod()]);
+
     await minimumLoadingTime;
 
     if (!mounted) {
@@ -144,6 +148,119 @@ class _CheckoutPageState extends State<CheckoutPage> {
         });
       }
     }
+  }
+
+  Future<void> _loadInitialPaymentMethod() async {
+    try {
+      final response = await ApiService.getPaymentMethods();
+
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode != 200) {
+        _usePaymentFallback();
+        return;
+      }
+
+      final data = response['payment_methods'];
+
+      if (data is! List) {
+        _usePaymentFallback();
+        return;
+      }
+
+      final paymentMethods = data
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+
+      final String currentMethod = AppState.instance.metodoPagoSeleccionado
+          .trim();
+
+      String? selectedMethod;
+
+      if (currentMethod == 'Mercado Pago' || currentMethod == 'Efectivo') {
+        selectedMethod = currentMethod;
+      } else if (currentMethod.isNotEmpty) {
+        for (final paymentMethod in paymentMethods) {
+          final formattedMethod = _formatPaymentMethod(paymentMethod);
+
+          if (formattedMethod == currentMethod) {
+            selectedMethod = formattedMethod;
+            break;
+          }
+        }
+      }
+
+      if (selectedMethod == null && paymentMethods.isNotEmpty) {
+        Map<String, dynamic>? principalMethod;
+
+        for (final paymentMethod in paymentMethods) {
+          if (paymentMethod['es_principal'] == true) {
+            principalMethod = paymentMethod;
+            break;
+          }
+        }
+
+        selectedMethod = _formatPaymentMethod(
+          principalMethod ?? paymentMethods.first,
+        );
+      }
+
+      selectedMethod ??= 'Mercado Pago';
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        metodoPagoSeleccionado = selectedMethod!;
+      });
+
+      AppState.instance.seleccionarMetodoPago(selectedMethod);
+    } catch (_) {
+      _usePaymentFallback();
+    }
+  }
+
+  void _usePaymentFallback() {
+    if (!mounted) {
+      return;
+    }
+
+    final String currentMethod = AppState.instance.metodoPagoSeleccionado
+        .trim();
+
+    final String fallback = currentMethod.isNotEmpty
+        ? currentMethod
+        : 'Mercado Pago';
+
+    setState(() {
+      metodoPagoSeleccionado = fallback;
+    });
+
+    AppState.instance.seleccionarMetodoPago(fallback);
+  }
+
+  String _formatPaymentMethod(Map<String, dynamic> paymentMethod) {
+    final marca = (paymentMethod['marca'] ?? 'Tarjeta').toString().trim();
+
+    final ultimos4 = (paymentMethod['ultimos_4'] ?? '').toString().trim();
+
+    final descripcion = paymentMethod['descripcion']?.toString().trim();
+
+    if (descripcion != null && descripcion.isNotEmpty) {
+      return descripcion;
+    }
+
+    if (ultimos4.isEmpty) {
+      return marca;
+    }
+
+    return '$marca •••• $ultimos4';
   }
 
   String _formatAddress(Map<String, dynamic> addressData) {
