@@ -169,14 +169,30 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     Navigator.pop(context, 'Efectivo');
   }
 
-  Future<void> administrarMetodosPago() async {
-    await Navigator.pushNamed(context, AppRoutes.profilePaymentMethods);
+  Future<void> agregarTarjeta() async {
+    final resultado = await Navigator.pushNamed(
+      context,
+      AppRoutes.addCard,
+      arguments: {
+        'fromProfile': false,
+        'esPrincipalInicial': paymentMethods.isEmpty,
+      },
+    );
 
     if (!mounted) {
       return;
     }
 
     await _loadPaymentMethods();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (resultado is String && resultado.trim().isNotEmpty) {
+      appState.seleccionarMetodoPago(resultado);
+      Navigator.pop(context, resultado);
+    }
   }
 
   IconData _getCardIcon(String marca) {
@@ -271,7 +287,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     _divider(),
 
                     InkWell(
-                      onTap: administrarMetodosPago,
+                      onTap: agregarTarjeta,
                       child: const Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: 24,
@@ -280,7 +296,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                         child: Row(
                           children: [
                             Icon(
-                              Icons.settings_outlined,
+                              Icons.add_card_outlined,
                               size: 21,
                               color: primaryColor,
                             ),
@@ -289,7 +305,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
                             Expanded(
                               child: Text(
-                                'Administrar métodos de pago',
+                                'Agregar tarjeta',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Color(0xFF303030),
@@ -504,7 +520,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           const SizedBox(height: 14),
 
           TextButton(
-            onPressed: administrarMetodosPago,
+            onPressed: agregarTarjeta,
             child: const Text(
               'Agregar método de pago',
               style: TextStyle(

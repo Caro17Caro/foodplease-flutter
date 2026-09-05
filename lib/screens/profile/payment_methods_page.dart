@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
+import '../../routes/app_routes.dart';
 import '../../services/api_service.dart';
 
 class PaymentMethodsPage extends StatefulWidget {
@@ -81,241 +80,22 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
     }
   }
 
-  Future<void> _showAddPaymentMethodDialog() async {
-    String marca = 'Visa';
-    String ultimos4 = '';
-    bool esPrincipal = paymentMethods.isEmpty;
-
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: const Text(
-                'Agregar método de pago',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DropdownButtonFormField<String>(
-                      initialValue: marca,
-                      decoration: InputDecoration(
-                        labelText: 'Marca',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: primaryBlue,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'Visa', child: Text('Visa')),
-                        DropdownMenuItem(
-                          value: 'Mastercard',
-                          child: Text('Mastercard'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'American Express',
-                          child: Text('American Express'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Débito',
-                          child: Text('Débito'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          marca = value;
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    TextFormField(
-                      keyboardType: TextInputType.number,
-                      maxLength: 4,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(4),
-                      ],
-                      onChanged: (value) {
-                        ultimos4 = value;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Últimos 4 dígitos',
-                        hintText: 'Ej: 1234',
-                        counterText: '',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: primaryBlue,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      activeThumbColor: primaryBlue,
-                      title: const Text(
-                        'Método principal',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: const Text(
-                        'Será tu método de pago predeterminado.',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      value: esPrincipal,
-                      onChanged: (value) {
-                        setDialogState(() {
-                          esPrincipal = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    final cleanDigits = ultimos4.trim();
-
-                    if (cleanDigits.length != 4 ||
-                        !RegExp(r'^\d{4}$').hasMatch(cleanDigits)) {
-                      ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Ingresa los últimos 4 dígitos de la tarjeta.',
-                          ),
-                        ),
-                      );
-
-                      return;
-                    }
-
-                    Navigator.pop(dialogContext, {
-                      'marca': marca,
-                      'ultimos4': cleanDigits,
-                      'es_principal': esPrincipal,
-                    });
-                  },
-                  child: const Text(
-                    'Agregar',
-                    style: TextStyle(
-                      color: primaryBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
+  Future<void> _addPaymentMethod() async {
+    final resultado = await Navigator.pushNamed(
+      context,
+      AppRoutes.addCard,
+      arguments: {
+        'fromProfile': true,
+        'esPrincipalInicial': paymentMethods.isEmpty,
       },
     );
 
-    if (result == null || !mounted) {
+    if (!mounted) {
       return;
     }
 
-    await _createPaymentMethod(
-      marca: result['marca'] as String,
-      ultimos4: result['ultimos4'] as String,
-      esPrincipal: result['es_principal'] as bool,
-    );
-  }
-
-  Future<void> _createPaymentMethod({
-    required String marca,
-    required String ultimos4,
-    required bool esPrincipal,
-  }) async {
-    setState(() {
-      procesandoMetodo = true;
-    });
-
-    try {
-      final response = await ApiService.createPaymentMethod(
-        marca: marca,
-        ultimos4: ultimos4,
-        esPrincipal: esPrincipal,
-      );
-
-      if (!mounted) {
-        return;
-      }
-
-      final int statusCode = response['status_code'] ?? 0;
-
-      if (statusCode == 201) {
-        await _loadPaymentMethods();
-
-        if (!mounted) {
-          return;
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Método de pago agregado correctamente.'),
-          ),
-        );
-
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response['message'] ?? 'No fue posible agregar el método de pago.',
-          ),
-        ),
-      );
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No fue posible conectar con el servidor.'),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          procesandoMetodo = false;
-        });
-      }
+    if (resultado != null) {
+      await _loadPaymentMethods();
     }
   }
 
@@ -635,7 +415,7 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
                     OutlinedButton.icon(
                       onPressed: procesandoMetodo
                           ? null
-                          : _showAddPaymentMethodDialog,
+                          : _addPaymentMethod,
                       icon: const Icon(Icons.add, color: primaryBlue),
                       label: const Text(
                         'Agregar método de pago',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 
 class AddCardPage extends StatefulWidget {
   const AddCardPage({super.key});
@@ -12,6 +13,11 @@ class AddCardPage extends StatefulWidget {
 
 class _AddCardPageState extends State<AddCardPage> {
   static const Color primaryColor = Color(0xFF29ABE2);
+
+  bool esPrincipal = false;
+  bool guardandoTarjeta = false;
+  bool _argumentosCargados = false;
+  bool desdePerfil = false;
 
   final TextEditingController cardController =
       TextEditingController();
@@ -38,6 +44,24 @@ class _AddCardPageState extends State<AddCardPage> {
     expirationController.addListener(_actualizarFormulario);
     cvvController.addListener(_actualizarFormulario);
     nicknameController.addListener(_actualizarFormulario);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_argumentosCargados) {
+      return;
+    }
+
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+
+    if (arguments is Map) {
+      desdePerfil = arguments['fromProfile'] == true;
+      esPrincipal = arguments['esPrincipalInicial'] == true;
+    }
+
+    _argumentosCargados = true;
   }
 
   @override
@@ -101,58 +125,147 @@ class _AddCardPageState extends State<AddCardPage> {
   Future<void> siguiente() async {
     FocusScope.of(context).unfocus();
 
-    if (!formularioCompleto) {
+    if (!formularioCompleto || guardandoTarjeta) {
       return;
     }
 
-    final numeroTarjeta =
-        cardController.text.replaceAll(' ', '');
+    final numeroTarjeta = cardController.text.replaceAll(' ', '');
 
-    /*
-      SIMULACIÓN:
+    // Simulación de validación de tarjeta:
+    // una tarjeta terminada en 0000 genera el flujo de error.
+    final bool simularError = numeroTarjeta.endsWith('0000');
 
-      Tarjeta terminada en 0000 → error.
-      Cualquier otra tarjeta de 16 dígitos → éxito.
-    */
-    final bool simularError =
-        numeroTarjeta.endsWith('0000');
+    if (simularError) {
+      final resultado = await Navigator.pushNamed(
+        context,
+        AppRoutes.cardResult,
+        arguments: {
+          'status': 'error',
+          'fromProfile': desdePerfil,
+        },
+      );
 
-    final resultado = await Navigator.pushNamed(
-      context,
-      AppRoutes.cardResult,
-      arguments: simularError
-          ? 'error'
-          : 'success',
-    );
+      if (!mounted) {
+        return;
+      }
 
-    if (!mounted) {
+      if (resultado == 'retry') {
+        return;
+      }
+
+      if (resultado == 'backToMethods') {
+        Navigator.pop(context);
+      }
+
       return;
     }
 
-    // Pantalla 39
-    if (resultado == 'success') {
-      final ultimosCuatro =
-          numeroTarjeta.substring(
+    setState(() {
+      guardandoTarjeta = true;
+    });
+
+    try {
+      final ultimosCuatro = numeroTarjeta.substring(
         numeroTarjeta.length - 4,
       );
 
-      Navigator.pop(
-        context,
-        'Visa •••• $ultimosCuatro',
+      final marca = _detectarMarca(numeroTarjeta);
+
+      // Por seguridad, al backend solo se envía la marca,
+      // los últimos 4 dígitos y si será el método principal.
+      // El número completo, la fecha y el CVV no se almacenan.
+      final response = await ApiService.createPaymentMethod(
+        marca: marca,
+        ultimos4: ultimosCuatro,
+        esPrincipal: esPrincipal,
       );
 
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      final int statusCode = response['status_code'] ?? 0;
+
+      if (statusCode != 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response['message'] ??
+                  'No fue posible guardar el método de pago.',
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      final paymentMethod = response['payment_method'];
+
+      String descripcion = '$marca •••• $ultimosCuatro';
+
+      if (paymentMethod is Map) {
+        final savedDescription =
+            paymentMethod['descripcion']?.toString().trim();
+
+        if (savedDescription != null && savedDescription.isNotEmpty) {
+          descripcion = savedDescription;
+        }
+      }
+
+      final resultado = await Navigator.pushNamed(
+        context,
+        AppRoutes.cardResult,
+        arguments: {
+          'status': 'success',
+          'fromProfile': desdePerfil,
+        },
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      if (resultado == 'success') {
+        Navigator.pop(context, descripcion);
+      }
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible conectar con el servidor.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          guardandoTarjeta = false;
+        });
+      }
+    }
+  }
+
+  String _detectarMarca(String numeroTarjeta) {
+    if (numeroTarjeta.startsWith('4')) {
+      return 'Visa';
     }
 
-    // Pantalla 40 → Intentar nuevamente
-    if (resultado == 'retry') {
-      return;
+    if (numeroTarjeta.length >= 2) {
+      final firstTwo = int.tryParse(numeroTarjeta.substring(0, 2));
+
+      if (firstTwo != null && firstTwo >= 51 && firstTwo <= 55) {
+        return 'Mastercard';
+      }
     }
 
-    // Pantalla 40 → volver a métodos de pago
-    if (resultado == 'backToMethods') {
-      Navigator.pop(context);
+    if (numeroTarjeta.startsWith('34') ||
+        numeroTarjeta.startsWith('37')) {
+      return 'American Express';
     }
+
+    return 'Tarjeta';
   }
 
   @override
@@ -348,7 +461,7 @@ class _AddCardPageState extends State<AddCardPage> {
                           textInputAction:
                               TextInputAction.done,
                           onSubmitted: (_) {
-                            if (formularioCompleto) {
+                            if (formularioCompleto && !guardandoTarjeta) {
                               siguiente();
                             }
                           },
@@ -356,6 +469,36 @@ class _AddCardPageState extends State<AddCardPage> {
                             hint: 'Ej.: principal',
                           ),
                         ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        activeThumbColor: primaryColor,
+                        title: const Text(
+                          'Método principal',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF303030),
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Será tu método de pago predeterminado.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF777777),
+                          ),
+                        ),
+                        value: esPrincipal,
+                        onChanged: guardandoTarjeta
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  esPrincipal = value;
+                                });
+                              },
                       ),
                     ],
                   ),
@@ -374,7 +517,7 @@ class _AddCardPageState extends State<AddCardPage> {
                   height: 48,
                   child: FilledButton(
                     onPressed:
-                        formularioCompleto
+                        formularioCompleto && !guardandoTarjeta
                             ? siguiente
                             : null,
                     style: FilledButton.styleFrom(
@@ -390,13 +533,22 @@ class _AddCardPageState extends State<AddCardPage> {
                             BorderRadius.circular(7),
                       ),
                     ),
-                    child: const Text(
-                      'Siguiente',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    child: guardandoTarjeta
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Siguiente',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                   ),
                 ),
               ),

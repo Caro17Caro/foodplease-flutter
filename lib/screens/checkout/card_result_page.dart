@@ -8,30 +8,37 @@ class CardResultPage extends StatelessWidget {
     final Object? arguments =
         ModalRoute.of(context)?.settings.arguments;
 
-    final bool error = arguments == 'error';
+    String status = 'success';
+    bool fromProfile = false;
+
+    if (arguments is Map) {
+      status = arguments['status']?.toString() ?? 'success';
+      fromProfile = arguments['fromProfile'] == true;
+    } else if (arguments != null) {
+      status = arguments.toString();
+    }
+
+    final bool error = status == 'error';
 
     return error
-        ? _buildError(context)
-        : _buildSuccess(context);
+        ? _buildError(context, fromProfile)
+        : _buildSuccess(context, fromProfile);
   }
 
-  // ============================================================
-  // 39 - TARJETA AGREGADA CON ÉXITO
-  // ============================================================
-
-  Widget _buildSuccess(BuildContext context) {
+  Widget _buildSuccess(
+    BuildContext context,
+    bool fromProfile,
+  ) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             _header('Método de pago'),
-
             const Divider(
               height: 1,
               color: Color(0xFFEAEAEA),
             ),
-
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -40,15 +47,12 @@ class CardResultPage extends StatelessWidget {
                 child: Column(
                   children: [
                     const Spacer(flex: 2),
-
                     const Icon(
                       Icons.check_circle_outline,
                       size: 78,
                       color: Color(0xFF4CAF50),
                     ),
-
                     const SizedBox(height: 34),
-
                     const Text(
                       '¡Tarjeta agregada con éxito!',
                       textAlign: TextAlign.center,
@@ -58,20 +62,18 @@ class CardResultPage extends StatelessWidget {
                         color: Color(0xFF303030),
                       ),
                     ),
-
                     const SizedBox(height: 22),
-
-                    const Text(
-                      'Ya puedes continuar con tu pedido',
+                    Text(
+                      fromProfile
+                          ? 'La tarjeta quedó guardada en tus métodos de pago'
+                          : 'Ya puedes continuar con tu pedido',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF777777),
                       ),
                     ),
-
                     const Spacer(flex: 3),
-
                     SizedBox(
                       width: double.infinity,
                       height: 48,
@@ -92,16 +94,17 @@ class CardResultPage extends StatelessWidget {
                                 BorderRadius.circular(7),
                           ),
                         ),
-                        child: const Text(
-                          'Volver al pago',
-                          style: TextStyle(
+                        child: Text(
+                          fromProfile
+                              ? 'Volver a métodos de pago'
+                              : 'Volver al pago',
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 22),
                   ],
                 ),
@@ -113,23 +116,20 @@ class CardResultPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // 40 - ERROR AL AGREGAR TARJETA
-  // ============================================================
-
-  Widget _buildError(BuildContext context) {
+  Widget _buildError(
+    BuildContext context,
+    bool fromProfile,
+  ) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             _header('Método de pago'),
-
             const Divider(
               height: 1,
               color: Color(0xFFEAEAEA),
             ),
-
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -138,7 +138,6 @@ class CardResultPage extends StatelessWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 55),
-
                     const Text(
                       'No pudimos agregar tu tarjeta',
                       textAlign: TextAlign.center,
@@ -148,9 +147,7 @@ class CardResultPage extends StatelessWidget {
                         color: Color(0xFF303030),
                       ),
                     ),
-
                     const SizedBox(height: 45),
-
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 18,
@@ -183,9 +180,7 @@ class CardResultPage extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 45),
-
                     const Text(
                       'Esto puede ocurrir porque los datos ingresados\n'
                       'no son válidos, la tarjeta no pudo ser verificada o\n'
@@ -197,9 +192,7 @@ class CardResultPage extends StatelessWidget {
                         color: Color(0xFF303030),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     const Text(
                       'No se realizó ningún cobro',
                       style: TextStyle(
@@ -207,9 +200,7 @@ class CardResultPage extends StatelessWidget {
                         color: Color(0xFF888888),
                       ),
                     ),
-
                     const Spacer(),
-
                     SizedBox(
                       width: double.infinity,
                       height: 48,
@@ -238,9 +229,7 @@ class CardResultPage extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
                     TextButton(
                       onPressed: () {
                         Navigator.pop(
@@ -248,16 +237,17 @@ class CardResultPage extends StatelessWidget {
                           'backToMethods',
                         );
                       },
-                      child: const Text(
-                        'Volver a métodos de pagos',
-                        style: TextStyle(
+                      child: Text(
+                        fromProfile
+                            ? 'Volver a métodos de pago'
+                            : 'Volver a métodos de pagos',
+                        style: const TextStyle(
                           fontSize: 11,
                           fontStyle: FontStyle.italic,
                           color: Color(0xFF74C8E9),
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 14),
                   ],
                 ),
@@ -275,7 +265,6 @@ class CardResultPage extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 56),
-
           Expanded(
             child: Text(
               title,
@@ -287,7 +276,6 @@ class CardResultPage extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(width: 56),
         ],
       ),
